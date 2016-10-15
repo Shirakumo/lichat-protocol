@@ -45,7 +45,7 @@
 
 (defun read-sexpr-token (stream)
   (with-output-to-string (out)
-    (loop for char = (read-char stream NIL)
+    (loop for char = (char-upcase (read-char stream NIL))
           do (case char
                (#\\ (write-char (read-char stream) out))
                ((#\" #\( #\) #\: #\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\. #\ ) (unread-char char stream) (return))
@@ -60,7 +60,7 @@
                (make-symbol (read-sexpr-token stream))
                (find-symbol (read-sexpr-token stream) (find-package token))))
           (T
-           (find-symbol token :lichat-wire)))))
+           (find-symbol token #.*package*)))))
 
 (defun read-sexpr (stream)
   (let ((char (read-char stream)))

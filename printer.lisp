@@ -30,14 +30,14 @@
   (loop for char across token
         do (when (find char "\"():0123456789. #")
              (write-char #\\ stream))
-           (write-char char stream)))
+           (write-char (char-downcase char) stream)))
 
 (defun print-sexpr-symbol (sexpr stream)
   (case (symbol-package sexpr)
     (#.(find-package :keyword)
      (write-char #\: stream)
      (print-sexpr-token (symbol-name sexpr) stream))
-    (#.(find-package :default)
+    (#.*package*
      (print-sexpr-token (symbol-name sexpr) stream))
     ((NIL)
      (write-char #\# stream)
