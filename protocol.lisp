@@ -13,23 +13,32 @@
 (deftype wireable ()
   `(or real string cons symbol wire-object))
 
-(defun check-username (name)
-  (check-type name string)
-  (assert (<= 1 (length name) 32)))
+(defun username-p (name)
+  (and (stringp name)
+       (<= 1 (length name) 32)))
 
-(defun check-channelname (name)
-  (check-type name string)
-  (assert (<= 1 (length name) 32)))
+(deftype username ()
+  `(satisfies username-p))
 
-(defun check-password (pass)
-  (check-type pass string)
-  (assert (<= 6 (length pass))))
+(defun channelname-p (name)
+  (and (stringp name)
+       (<= 1 (length name) 32)))
 
-(defun check-id (id)
-  (check-type id (not null)))
+(deftype channelname ()
+  `(satisfies channelname-p))
 
-(defun check-permissions (perms)
-  (check-type perms list))
+(defun password-p (pass)
+  (and (stringp pass)
+       (<= 6 (length pass))))
+
+(deftype password ()
+  `(satisfies password-p))
+
+(defun id-p (id)
+  (not (null id)))
+
+(deftype id ()
+  `(satisfies id-p))
 
 (defun next-id ()
   (incf *id-counter*))
@@ -56,8 +65,8 @@
    :lifetime *default-profile-lifetime*))
 
 (defmethod initialize-instance :before ((profile profile) &key name password lifetime)
-  (check-password password)
-  (check-username name)
+  (check-type password password)
+  (check-type name username)
   (check-type lifetime (integer 0)))
 
 (defclass user (named-object server-object)
@@ -68,7 +77,7 @@
    :channels ()))
 
 (defmethod initialize-instance :before ((user user) &key name connections channels)
-  (check-username name)
+  (check-type name username)
   (check-type connections list)
   (check-type channels list))
 
@@ -88,8 +97,8 @@
    (users :initarg :users :accessor users)))
 
 (defmethod initialize-instance :before ((channel channel) &key name permissions lifetime users)
-  (check-channelname name)
-  (check-permissions permissions)
+  (check-type name channelname)
+  (check-type permissions list)
   (check-type lifetime (integer 0))
   (check-type users list))
 
@@ -106,8 +115,8 @@
    :clock (get-universal-time)))
 
 (defmethod initialize-instance :before ((update update) &key id clock from)
-  (check-id id)
-  (check-username from)
+  (check-type id id)
+  (check-type from username)
   (check-type clock integer))
 
 (defmethod print-object ((update update) stream)
@@ -131,19 +140,19 @@
   ((password :initarg :password :accessor password)))
 
 (defmethod initialize-instance :before ((update register) &key password)
-  (check-password password))
+  (check-type password password))
 
 (defclass channel-update (update)
   ((channel :initarg :channel :accessor channel)))
 
 (defmethod initialize-instance :before ((update channel-update) &key channel)
-  (check-channelname channel))
+  (check-type channel channelname))
 
 (defclass target-update (update)
   ((target :initarg :target :accessor target)))
 
 (defmethod initialize-instance :before ((update target-update) &key target)
-  (check-username target))
+  (check-type target username))
 
 (defclass text-update (update)
   ((text :initarg :text :accessor text)))
@@ -170,7 +179,7 @@
   ((permissions :initarg :permissions :accessor permissions)))
 
 (defmethod initialize-instance :before ((update permissions) &key permissions)
-  (check-permissions permissions))
+  (check-type permissions list))
 
 (defclass message (channel-update text-update)
   ())
@@ -201,7 +210,7 @@
   ((update-id :initarg :update-id :accessor update-id)))
 
 (defmethod initialize-instance :before ((update update-failure) &key update-id)
-  (check-id update-id))
+  (check-type update-id id))
 
 (defclass invalid-update (update-failure)
   ())
