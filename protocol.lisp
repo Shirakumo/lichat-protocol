@@ -47,205 +47,162 @@
   (asdf:component-version
    (asdf:find-system :lichat-protocol)))
 
+(defmacro define-protocol-class (name direct-superclasses direct-slots &rest options)
+  `(define-typed-class ,name ,direct-superclasses ,direct-slots ,@options))
+
+(defun maybe-sval (object slot)
+  (if (slot-boundp object slot)
+      (slot-value object slot)
+      *unbound-value*))
+
 ;; Server-side objects
-(defclass server-object ()
+(define-protocol-class server-object ()
   ())
 
-(defclass named-object ()
+(define-protocol-class named-object ()
   ((name :initarg :name :accessor name)))
 
 (defmethod print-object ((object named-object) stream)
   (print-unreadable-object (object stream :type T)
-    (format stream "~a" (name object))))
+    (format stream "~a" (maybe-sval object 'name))))
 
-(defclass profile (named-object server-object)
-  ((password :initarg :password :accessor password)
-   (lifetime :initarg :lifetime :accessor lifetime))
+(define-protocol-class profile (named-object server-object)
+  ((name :initarg :name :accessor name :type username)
+   (password :initarg :password :accessor password :type password)
+   (lifetime :initarg :lifetime :accessor lifetime :type (integer 0)))
   (:default-initargs
    :lifetime *default-profile-lifetime*))
 
-(defmethod initialize-instance :before ((profile profile) &key name password lifetime)
-  (check-type password password)
-  (check-type name username)
-  (check-type lifetime (integer 0)))
-
-(defclass user (named-object server-object)
-  ((connections :initarg :connections :accessor connections)
-   (channels :initarg :channels :accessor channels))
+(define-protocol-class user (named-object server-object)
+  ((connections :initarg :connections :accessor connections :type list)
+   (channels :initarg :channels :accessor channels :type list))
   (:default-initargs
    :connections ()
    :channels ()))
 
-(defmethod initialize-instance :before ((user user) &key name connections channels)
-  (check-type name username)
-  (check-type connections list)
-  (check-type channels list))
+(define-protocol-class connection (server-object)
+  ((user :initarg :user :accessor user :type user)
+   (hostname :initarg :hostname :accessor hostname :type string)
+   (port :initarg :port :accessor port :type (integer 0))))
 
-(defclass connection (server-object)
-  ((user :initarg :user :accessor user)
-   (hostname :initarg :hostname :accessor hostname)
-   (port :initarg :port :accessor port)))
-
-(defmethod initialize-instance :before ((connection connection) &key user hostname port)
-  (check-type user user)
-  (check-type hostname string)
-  (check-type port integer))
-
-(defclass channel (named-object server-object)
-  ((permissions :initarg :permissions :accessor permissions)
-   (lifetime :initarg :lifetime :accessor lifetime)
-   (users :initarg :users :accessor users)))
-
-(defmethod initialize-instance :before ((channel channel) &key name permissions lifetime users)
-  (check-type name channelname)
-  (check-type permissions list)
-  (check-type lifetime (integer 0))
-  (check-type users list))
+(define-protocol-class channel (named-object server-object)
+  ((name :initarg :name :accessor name :type channelname)
+   (permissions :initarg :permissions :accessor permissions :type list)
+   (lifetime :initarg :lifetime :accessor lifetime :type (integer 0))
+   (users :initarg :users :accessor users :type list)))
 
 ;; Updates
-(defclass wire-object ()
+(define-protocol-class wire-object ()
   ())
 
-(defclass update (wire-object)
-  ((id :initarg :id :accessor id)
-   (clock :initarg :clock :accessor clock)
-   (from :initarg :from :accessor from))
+(define-protocol-class update (wire-object)
+  ((id :initarg :id :accessor id :type id)
+   (clock :initarg :clock :accessor clock :type integer)
+   (from :initarg :from :accessor from :type username))
   (:default-initargs
    :id (next-id)
    :clock (get-universal-time)))
 
-(defmethod initialize-instance :before ((update update) &key id clock from)
-  (check-type id id)
-  (check-type from username)
-  (check-type clock integer))
-
 (defmethod print-object ((update update) stream)
   (print-unreadable-object (update stream :type T)
-    (format stream "~s ~a ~s ~a" :from (from update) :id (id update))))
+    (format stream "~s ~a ~s ~a" :from (maybe-sval update 'from)
+                                 :id (maybe-sval update 'id))))
 
-(defclass connect (update)
-  ((password :initarg :password :accessor password)
-   (version :initarg :version :accessor version))
+(define-protocol-class connect (update)
+  ((password :initarg :password :accessor password :type (or null password))
+   (version :initarg :version :accessor version :type string))
   (:default-initargs
    :version (protocol-version)))
 
-(defmethod initialize-instance :before ((update connect) &key password version)
-  (when password (check-password password))
-  (check-type version string))
-
-(defclass disconnect (update)
+(define-protocol-class disconnect (update)
   ())
 
-(defclass register (update)
-  ((password :initarg :password :accessor password)))
+(define-protocol-class register (update)
+  ((password :initarg :password :accessor password :type password)))
 
-(defmethod initialize-instance :before ((update register) &key password)
-  (check-type password password))
+(define-protocol-class channel-update (update)
+  ((channel :initarg :channel :accessor channel :type channelname)))
 
-(defclass channel-update (update)
-  ((channel :initarg :channel :accessor channel)))
+(define-protocol-class target-update (update)
+  ((target :initarg :target :accessor target :type username)))
 
-(defmethod initialize-instance :before ((update channel-update) &key channel)
-  (check-type channel channelname))
+(define-protocol-class text-update (update)
+  ((text :initarg :text :accessor text :type string)))
 
-(defclass target-update (update)
-  ((target :initarg :target :accessor target)))
-
-(defmethod initialize-instance :before ((update target-update) &key target)
-  (check-type target username))
-
-(defclass text-update (update)
-  ((text :initarg :text :accessor text)))
-
-(defmethod initialize-instance :before ((update text-update) &key text)
-  (check-type text string))
-
-(defclass join (channel-update)
+(define-protocol-class join (channel-update)
   ())
 
-(defclass leave (channel-update)
+(define-protocol-class leave (channel-update)
   ())
 
-(defclass create (channel-update)
+(define-protocol-class create (channel-update)
   ())
 
-(defclass kick (channel-update target-update)
+(define-protocol-class kick (channel-update target-update)
   ())
 
-(defclass pull (channel-update target-update)
+(define-protocol-class pull (channel-update target-update)
   ())
 
-(defclass permissions (channel-update)
-  ((permissions :initarg :permissions :accessor permissions)))
+(define-protocol-class permissions (channel-update)
+  ((permissions :initarg :permissions :accessor permissions :type list)))
 
-(defmethod initialize-instance :before ((update permissions) &key permissions)
-  (check-type permissions list))
-
-(defclass message (channel-update text-update)
+(define-protocol-class message (channel-update text-update)
   ())
 
-(defclass users (channel-update)
-  ((users :initarg :users :accessor users)))
+(define-protocol-class users (channel-update)
+  ((users :initarg :users :accessor users :type list)))
 
-(defmethod initialize-instance :before ((update users) &key users)
-  (check-type users list))
-
-(defclass channels ()
-  ((channels :initarg :channels :accessor channels)))
-
-(defmethod initialize-instance :before ((update channels) &key channels)
-  (check-type channels list))
+(define-protocol-class channels ()
+  ((channels :initarg :channels :accessor channels :type list)))
 
 ;; Errors
-(defclass failure (text-update)
+(define-protocol-class failure (text-update)
   ())
 
-(defclass malformed-update (failure)
+(define-protocol-class malformed-update (failure)
   ())
 
-(defclass connection-unstable (failure)
+(define-protocol-class connection-unstable (failure)
   ())
 
-(defclass update-failure (failure)
-  ((update-id :initarg :update-id :accessor update-id)))
+(define-protocol-class update-failure (failure)
+  ((update-id :initarg :update-id :accessor update-id :type id)))
 
-(defmethod initialize-instance :before ((update update-failure) &key update-id)
-  (check-type update-id id))
-
-(defclass invalid-update (update-failure)
+(define-protocol-class invalid-update (update-failure)
   ())
 
-(defclass invalid-password (update-failure)
+(define-protocol-class invalid-password (update-failure)
   ())
 
-(defclass no-such-profile (update-failure)
+(define-protocol-class no-such-profile (update-failure)
   ())
 
-(defclass username-taken (update-failure)
+(define-protocol-class username-taken (update-failure)
   ())
 
-(defclass no-such-channel (update-failure)
+(define-protocol-class no-such-channel (update-failure)
   ())
 
-(defclass already-in-channel (update-failure)
+(define-protocol-class already-in-channel (update-failure)
   ())
 
-(defclass not-in-channel (update-failure)
+(define-protocol-class not-in-channel (update-failure)
   ())
 
-(defclass channelname-taken (update-failure)
+(define-protocol-class channelname-taken (update-failure)
   ())
 
-(defclass insufficient-permissions (update-failure)
+(define-protocol-class insufficient-permissions (update-failure)
   ())
 
-(defclass invalid-permissions (update-failure)
+(define-protocol-class invalid-permissions (update-failure)
   ())
 
-(defclass no-such-user (update-failure)
+(define-protocol-class no-such-user (update-failure)
   ())
 
-(defclass too-many-updates (update-failure)
+(define-protocol-class too-many-updates (update-failure)
   ())
 
 ;; Method calls that translate to updates on the wire

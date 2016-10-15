@@ -16,6 +16,7 @@
   :components ((:file "package")
                (:file "printer")
                (:file "reader")
+               (:file "typed-slot-class")
                (:file "protocol")
                (:file "wire")
                (:file "documentation"))
