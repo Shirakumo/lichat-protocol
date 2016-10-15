@@ -15,7 +15,7 @@
                              collect (slot-value wireable (c2mop:slot-definition-name slot))))
                   stream))
     (wireable
-     (print-sexpr wirable stream))))
+     (print-sexpr wireable stream))))
 
 (defun from-wire (stream)
   (let ((sexpr (read-sexpr stream)))
