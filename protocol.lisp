@@ -89,7 +89,11 @@
   ((name :initarg :name :accessor name :type channelname)
    (permissions :initarg :permissions :accessor permissions :type list)
    (lifetime :initarg :lifetime :accessor lifetime :type (integer 0))
-   (users :initarg :users :accessor users :type list)))
+   (users :initarg :users :accessor users :type list))
+  (:default-initargs
+   :permissions ()
+   :lifetime *default-channel-lifetime*
+   :users ()))
 
 ;; Updates
 (define-protocol-class wire-object ()
