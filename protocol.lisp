@@ -42,9 +42,15 @@
 (defclass server-object ()
   ())
 
-(defclass profile (server-object)
-  ((name :initarg :name :accessor name)
-   (password :initarg :password :accessor password)
+(defclass named-object ()
+  ((name :initarg :name :accessor name)))
+
+(defmethod print-object ((object named-object) stream)
+  (print-unreadable-object (object stream :type T)
+    (format stream "~a" (name object))))
+
+(defclass profile (named-object server-object)
+  ((password :initarg :password :accessor password)
    (lifetime :initarg :lifetime :accessor lifetime))
   (:default-initargs
    :lifetime *default-profile-lifetime*))
@@ -54,21 +60,10 @@
   (check-username name)
   (check-type lifetime (integer 0)))
 
-(defclass connection (server-object)
-  ((user :initarg :user :accessor user)
-   (hostname :initarg :hostname :accessor hostname)
-   (port :initarg :port :accessor port)))
-
-(defmethod initialize-instance :before ((connection connection) &key user hostname port)
-  (check-username user)
-  (check-type hostname string)
-  (check-type port integer))
-
-(defclass user (server-object)
-  ((name :initarg :name :accessor name)
-   (connections :initarg :connections :accessor connections)
+(defclass user (named-object server-object)
+  ((connections :initarg :connections :accessor connections)
    (channels :initarg :channels :accessor channels))
-  (:Default-initargs
+  (:default-initargs
    :connections ()
    :channels ()))
 
@@ -77,9 +72,18 @@
   (check-type connections list)
   (check-type channels list))
 
-(defclass channel (server-object)
-  ((name :initarg :name :accessor name)
-   (permissions :initarg :permissions :accessor permissions)
+(defclass connection (server-object)
+  ((user :initarg :user :accessor user)
+   (hostname :initarg :hostname :accessor hostname)
+   (port :initarg :port :accessor port)))
+
+(defmethod initialize-instance :before ((connection connection) &key user hostname port)
+  (check-type user user)
+  (check-type hostname string)
+  (check-type port integer))
+
+(defclass channel (named-object server-object)
+  ((permissions :initarg :permissions :accessor permissions)
    (lifetime :initarg :lifetime :accessor lifetime)
    (users :initarg :users :accessor users)))
 
@@ -105,6 +109,10 @@
   (check-id id)
   (check-username from)
   (check-type clock integer))
+
+(defmethod print-object ((update update) stream)
+  (print-unreadable-object (update stream :type T)
+    (format stream "~s ~a ~s ~a" :from (from update) :id (id update))))
 
 (defclass connect (update)
   ((password :initarg :password :accessor password)
