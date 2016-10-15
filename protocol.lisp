@@ -99,7 +99,7 @@
    (from :initarg :from :accessor from))
   (:default-initargs
    :id (next-id)
-   :time (get-universal-time)))
+   :clock (get-universal-time)))
 
 (defmethod initialize-instance :before ((update update) &key id clock from)
   (check-id id)
