@@ -10,6 +10,36 @@
 (defvar *default-channel-lifetime* (* 60 60 24 30))
 (defvar *id-counter* 0)
 
+(defvar *default-regular-channel-permissions*
+  '((permissions registrant)
+    (join T)
+    (leave T)
+    (kick registrant)
+    (pull T)
+    (message T)
+    (users T)
+    (channels T)))
+
+(defvar *default-anonymous-channel-permissions*
+  '((permissions NIL)
+    (join NIL)
+    (leave T)
+    (kick NIL)
+    (pull T)
+    (message T)
+    (users NIL)
+    (channels NIL)))
+
+(defvar *default-primary-channel-permissions*
+  '((permissions registrant)
+    (join T)
+    (leave NIL)
+    (kick registrant)
+    (pull NIL)
+    (message registrant)
+    (users T)
+    (channels T)))
+
 (deftype wireable ()
   `(or real string cons symbol wire-object))
 
@@ -67,7 +97,7 @@
     (format stream "~a" (maybe-sval object 'name))))
 
 (define-protocol-class profile (named-object server-object)
-  ((name :initarg :name :accessor name :type username)
+  ((name :type username)
    (password :initarg :password :accessor password :type password)
    (lifetime :initarg :lifetime :accessor lifetime :type (integer 0)))
   (:default-initargs
@@ -81,12 +111,12 @@
    :channels ()))
 
 (define-protocol-class connection (server-object)
-  ((user :initarg :user :accessor user :type user)
+  ((user :initarg :user :accessor user :type (or null user))
    (hostname :initarg :hostname :accessor hostname :type string)
    (port :initarg :port :accessor port :type (integer 0))))
 
 (define-protocol-class channel (named-object server-object)
-  ((name :initarg :name :accessor name :type channelname)
+  ((name :type channelname)
    (permissions :initarg :permissions :accessor permissions :type list)
    (lifetime :initarg :lifetime :accessor lifetime :type (integer 0))
    (users :initarg :users :accessor users :type list))
@@ -98,6 +128,14 @@
 ;; Updates
 (define-protocol-class wire-object ()
   ())
+
+(define-protocol-class ping (wire-object)
+  ((clock :initarg :clock :accessor clock :type integer))
+  (:default-initargs :clock (get-universal-time)))
+
+(define-protocol-class pong (wire-object)
+  ((clock :initarg :clock :accessor clock :type integer))
+  (:default-initargs :clock (get-universal-time)))
 
 (define-protocol-class update (wire-object)
   ((id :initarg :id :accessor id :type id)
@@ -161,7 +199,7 @@
   ((channels :initarg :channels :accessor channels :type list)))
 
 ;; Errors
-(define-protocol-class failure (text-update)
+(define-protocol-class failure (error text-update)
   ())
 
 (define-protocol-class malformed-update (failure)
@@ -175,6 +213,9 @@
 
 (define-protocol-class invalid-update (update-failure)
   ())
+
+(define-protocol-class incompatible-version (update-failure)
+  ((compatible-versions :initarg :compatible-versions :accessor compatible-versions :type cons)))
 
 (define-protocol-class invalid-password (update-failure)
   ())
@@ -195,6 +236,9 @@
   ())
 
 (define-protocol-class channelname-taken (update-failure)
+  ())
+
+(define-protocol-class bad-name (update-failure)
   ())
 
 (define-protocol-class insufficient-permissions (update-failure)
@@ -288,29 +332,3 @@
 ;; you <  serv - (message :id 16 :from username :channel unique-id :text "Yo.")
 ;; guy <  serv - (message :id 16 :from username :channel unique-id :text "Yo.")
 ;;
-;;; Channels and Permissions:
-;; On creation, anonymous channels get the following default permissions:
-;;  - JOIN             NIL  - Does not allow JOINing the channel, must be PULLed.
-;;  - CHANNELS         NIL  - Prevents seeing the channel in the CHANNELS listing.
-;;  - TIMEOUT            0  - Makes the channel be deleted as soon as there are
-;;                            no more users in it.
-;; Other channels get the following default permissions:
-;;  - PERMISSIONS     user  - Allows the creator to change permissions.
-;;  - JOIN               T  - Allows anyone to join.
-;;  - KICK            user  - Allows the creator to kick people.
-;;  - PULL               T  - Allows anyone to invite.
-;;  - MESSAGE            T  - Allows anyone to send messages.
-;;  - CHANNELS           T  - Allows seeing the channel in the CHANNELs listing.
-;;
-;; The server channel gets the following default permissions:
-;;  - PERMISSIONS hostname  - Only the server can change permissions.
-;;  - JOIN               T  - Anyone can enter.
-;;  - KICK        hostname  - Only the server can kick.
-;;  - PULL             NIL  - Doesn't make any sense anyway.
-;;  - MESSAGE     hostname  - Allows only the server itself to send messages.
-;;  - CHANNELS           T  - Allows anyone to see the server channel.
-;;
-;; Implicit permissions that cannot be changed by a user:
-;;  - LEAVE              T  - Allows anyone to leave.
-;;  - USERS              T  - Allows anyone to see which users are in.
-;;  - TIMEOUT           32  - Number of days of inactivity until deletion.
