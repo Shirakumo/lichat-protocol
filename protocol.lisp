@@ -199,12 +199,19 @@
 (define-protocol-class users (channel-update)
   ((users :initarg :users :accessor users :type list)))
 
-(define-protocol-class channels ()
-  ((channels :initarg :channels :accessor channels :type list)))
+(define-protocol-class channels (update)
+  ((channels :initarg :channels :accessor channels :type list))
+  (:default-initargs :channels ()))
 
 ;; Errors
 (define-protocol-class failure (text-update)
   ())
+
+(defmethod print-object ((update failure) stream)
+  (print-unreadable-object (update stream :type T)
+    (format stream "~s ~a ~s ~a ~s ~s" :from (maybe-sval update 'from)
+                                       :id (maybe-sval update 'id)
+                                       :text (maybe-sval update 'text))))
 
 (define-protocol-class malformed-update (failure)
   ())
