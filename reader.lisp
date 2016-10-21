@@ -6,13 +6,30 @@
 
 (in-package #:org.shirakumo.lichat.protocol)
 
+(defvar *whitespace*
+  #+asdf-unicode (map 'vector #'code-char '(#x0009 #x000A #x000B #x000C #x000D #x0020
+                                            #x0085 #x00A0 #x1680 #x2000 #x2001 #x2002
+                                            #x2003 #x2004 #x2005 #x2006 #x2008 #x2009
+                                            #x200A #x2028 #x2029 #x202F #x205F #x3000
+                                            #x180E #x200B #x200C #x200D #x2060 #xFEFF))
+  #-asdf-unicode (map 'vector #'code-char '(#x0009 #x000A #x000B #x000C #x000D #x0020)))
+
+(defun whitespace-p (char)
+  (find char *whitespace*))
+
+(defun skip-whitespace (stream)
+  (loop for char = (read-char stream)
+        while (find char *whitespace*)
+        finally (unread-char char stream)))
+
 (defun safe-find-symbol (name package)
   (let ((package (find-package package)))
     (or (find-symbol name package)
         (error 'unknown-symbol :symbol-designator (cons (package-name package) name)))))
 
 (defun read-sexpr-list (stream)
-  (prog1 (loop until (eql #\) (peek-char T stream))
+  (prog1 (loop do (skip-whitespace stream)
+               until (eql #\) (peek-char T stream))
                collect (read-sexpr stream))
     (read-char stream)))
 
@@ -68,6 +85,7 @@
            (safe-find-symbol token #.*package*)))))
 
 (defun read-sexpr (stream)
+  (skip-whitespace stream)
   (let ((char (read-char stream)))
     (handler-bind
         ((end-of-file (lambda (err)

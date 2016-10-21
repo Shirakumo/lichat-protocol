@@ -105,7 +105,8 @@
    #:no-such-user
    #:too-many-updates)
   ;; reader.lisp
-  (:export)
+  (:export
+   #:whitespace-p)
   ;; typed-slot-class.lisp
   (:export)
   ;; wire.lisp
