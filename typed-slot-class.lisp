@@ -8,14 +8,6 @@
 
 (defvar *unbound-value* (make-symbol "UNBOUND"))
 
-(define-condition incompatible-value-type-for-slot (error)
-  ((object :initarg :object)
-   (slot :initarg :slot)
-   (value :initarg :value)
-   (type :initarg :type))
-  (:report (lambda (c s) (format s "Setting ~s as value of slot ~s on ~s failed as it is not of type ~s."
-                                 (slot-value c 'value) (slot-value c 'slot) (slot-value c 'object) (slot-value c 'type)))))
-
 (defun check-compatible-slot-value (value object slot)
   (cond ((eq value *unbound-value*)
          (unless (eql T (c2mop:slot-definition-type slot))     

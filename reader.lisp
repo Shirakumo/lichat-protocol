@@ -6,6 +6,11 @@
 
 (in-package #:org.shirakumo.lichat.protocol)
 
+(defun safe-find-symbol (name package)
+  (let ((package (find-package package)))
+    (or (find-symbol name package)
+        (error 'unknown-symbol :symbol-designator (cons (package-name package) name)))))
+
 (defun read-sexpr-list (stream)
   (prog1 (loop until (eql #\) (peek-char T stream))
                collect (read-sexpr stream))
@@ -20,7 +25,7 @@
                (T   (write-char char out))))))
 
 (defun read-sexpr-keyword (stream)
-  (find-symbol (read-sexpr-token stream) :keyword))
+  (safe-find-symbol (read-sexpr-token stream) :keyword))
 
 (defun read-sexpr-number (stream)
   (let ((out (make-string-output-stream))
@@ -58,18 +63,22 @@
            (read-char stream)
            (if (string= token "#")
                (make-symbol (read-sexpr-token stream))
-               (find-symbol (read-sexpr-token stream) (find-package token))))
+               (safe-find-symbol (read-sexpr-token stream) (find-package token))))
           (T
-           (find-symbol token #.*package*)))))
+           (safe-find-symbol token #.*package*)))))
 
 (defun read-sexpr (stream)
   (let ((char (read-char stream)))
-    (case char
-      (#\( (read-sexpr-list stream))
-      (#\" (read-sexpr-string stream))
-      ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\.)
-       (unread-char char stream)
-       (read-sexpr-number stream))
-      (#\: (read-sexpr-keyword stream))
-      (T (unread-char char stream)
-       (read-sexpr-symbol stream)))))
+    (handler-bind
+        ((end-of-file (lambda (err)
+                        (declare (ignore err))
+                        (error 'incomplete-token))))
+      (case char
+        (#\( (read-sexpr-list stream))
+        (#\" (read-sexpr-string stream))
+        ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\.)
+         (unread-char char stream)
+         (read-sexpr-number stream))
+        (#\: (read-sexpr-keyword stream))
+        (T (unread-char char stream)
+         (read-sexpr-symbol stream))))))

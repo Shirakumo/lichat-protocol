@@ -49,9 +49,10 @@
      (print-sexpr-token (symbol-name sexpr) stream))))
 
 (defun print-sexpr (sexpr stream)
-  (etypecase sexpr
+  (typecase sexpr
     (list (print-sexpr-list sexpr stream))
     (string (print-sexpr-string sexpr stream))
     (real (print-sexpr-number sexpr stream))
-    (symbol (print-sexpr-symbol sexpr stream)))
+    (symbol (print-sexpr-symbol sexpr stream))
+    (T (error 'unprintable-object :object sexpr)))
   sexpr)

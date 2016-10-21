@@ -8,6 +8,15 @@
 (defpackage #:lichat-protocol
   (:nicknames #:org.shirakumo.lichat.protocol)
   (:use #:cl)
+  ;; conditions.lisp
+  (:export
+   #:protocol-condition
+   #:printer-condition
+   #:unprintable-object
+   #:reader-condition
+   #:incomplete-token
+   #:unknown-symbol
+   #:incompatible-value-type-for-slot)
   ;; printer.lisp
   (:export)
   ;; protocol.lisp

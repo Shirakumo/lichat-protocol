@@ -14,6 +14,7 @@
   :homepage "https://github.com/Shinmera/lichat"
   :serial T
   :components ((:file "package")
+               (:file "conditions")
                (:file "printer")
                (:file "reader")
                (:file "typed-slot-class")

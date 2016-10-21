@@ -1,0 +1,38 @@
+#|
+ This file is a part of lichat
+ (c) 2016 Shirakumo http://tymoon.eu (shinmera@tymoon.eu)
+ Author: Nicolas Hafner <shinmera@tymoon.eu>
+|#
+
+(in-package #:org.shirakumo.lichat.protocol)
+
+(define-condition protocol-condition (condition)
+  ())
+
+(define-condition printer-condition (condition)
+  ())
+
+(define-condition unprintable-object (error printer-condition)
+  ((object :initarg :object :reader object))
+  (:report (lambda (c s) (format s "The object~%  ~s~%cannot be printed to the lichat wire format."
+                                 (object c)))))
+
+(define-condition reader-condition (condition)
+  ())
+
+(define-condition incomplete-token (error reader-condition)
+  ()
+  (:report "Unable to read complete token-- end of stream reached prematurely."))
+
+(define-condition unknown-symbol (error reader-condition)
+  ((symbol-designator :initarg :symbol-designator :reader symbol-designator))
+  (:report (lambda (c s) (format s "The symbol ~a::~a was found on the wire, but is not interned locally."
+                                 (car (symbol-designator c)) (cdr (symbol-designator c))))))
+
+(define-condition incompatible-value-type-for-slot (error)
+  ((object :initarg :object)
+   (slot :initarg :slot)
+   (value :initarg :value)
+   (type :initarg :type))
+  (:report (lambda (c s) (format s "Setting ~s as value of slot ~s on ~s failed as it is not of type ~s."
+                                 (slot-value c 'value) (slot-value c 'slot) (slot-value c 'object) (slot-value c 'type)))))
