@@ -6,21 +6,22 @@
 
 (in-package #:org.shirakumo.lichat.protocol)
 
-(defvar *default-profile-lifetime* (* 60 60 24 365))
-(defvar *default-channel-lifetime* (* 60 60 24 30))
 (defvar *id-counter* 0)
 
-(defvar *default-regular-channel-permissions*
-  '((permissions registrant)
+(defparameter *default-profile-lifetime* (* 60 60 24 365))
+(defparameter *default-channel-lifetime* (* 60 60 24 30))
+
+(defparameter *default-regular-channel-permissions*
+  '((permissions (:registrant))
     (join T)
     (leave T)
-    (kick registrant)
+    (kick (:registrant))
     (pull T)
     (message T)
     (users T)
     (channels T)))
 
-(defvar *default-anonymous-channel-permissions*
+(defparameter *default-anonymous-channel-permissions*
   '((permissions NIL)
     (join NIL)
     (leave T)
@@ -30,13 +31,13 @@
     (users NIL)
     (channels NIL)))
 
-(defvar *default-primary-channel-permissions*
-  '((permissions registrant)
+(defparameter *default-primary-channel-permissions*
+  '((permissions (:registrant))
     (join T)
     (leave NIL)
-    (kick registrant)
+    (kick (:registrant))
     (pull NIL)
-    (message registrant)
+    (message (:registrant))
     (users T)
     (channels T)))
 
