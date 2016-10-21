@@ -130,14 +130,6 @@
 (define-protocol-class wire-object ()
   ())
 
-(define-protocol-class ping (wire-object)
-  ((clock :initarg :clock :accessor clock :type integer))
-  (:default-initargs :clock (get-universal-time)))
-
-(define-protocol-class pong (wire-object)
-  ((clock :initarg :clock :accessor clock :type integer))
-  (:default-initargs :clock (get-universal-time)))
-
 (define-protocol-class update (wire-object)
   ((id :initarg :id :accessor id :type id)
    (clock :initarg :clock :accessor clock :type integer)
@@ -150,6 +142,16 @@
   (print-unreadable-object (update stream :type T)
     (format stream "~s ~a ~s ~a" :from (maybe-sval update 'from)
                                  :id (maybe-sval update 'id))))
+
+(define-protocol-class ping (update)
+  ((clock :initarg :clock :accessor clock :type integer))
+  (:default-initargs
+   :clock (get-universal-time)))
+
+(define-protocol-class pong (update)
+  ((clock :initarg :clock :accessor clock :type integer))
+  (:default-initargs
+   :clock (get-universal-time)))
 
 (define-protocol-class connect (update)
   ((password :initarg :password :accessor password :type (or null password))
