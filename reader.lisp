@@ -66,6 +66,7 @@
           number))))
 
 (defun read-sexpr-token (stream)
+  (peek-char NIL stream)
   (with-output-to-string (out)
     (loop for char = (char-upcase (read-char stream NIL))
           do (case char
