@@ -41,13 +41,10 @@
 (defclass typed-slot-class (standard-class)
   ())
 
-(defmethod c2mop:validate-superclass ((class T) (superclass typed-slot-class))
-  T)
-
 (defmethod c2mop:validate-superclass ((class standard-class) (superclass typed-slot-class))
   T)
 
-(defmethod c2mop:validate-superclass ((class typed-slot-class) (superclass T))
+(defmethod c2mop:validate-superclass ((class typed-slot-class) (superclass standard-class))
   T)
 
 (defmethod c2mop:direct-slot-definition-class ((class typed-slot-class) &key)

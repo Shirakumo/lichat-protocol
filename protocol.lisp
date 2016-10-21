@@ -154,6 +154,7 @@
   ((password :initarg :password :accessor password :type (or null password))
    (version :initarg :version :accessor version :type string))
   (:default-initargs
+   :password NIL
    :version (protocol-version)))
 
 (define-protocol-class disconnect (update)
@@ -199,7 +200,7 @@
   ((channels :initarg :channels :accessor channels :type list)))
 
 ;; Errors
-(define-protocol-class failure (error text-update)
+(define-protocol-class failure (text-update)
   ())
 
 (define-protocol-class malformed-update (failure)
