@@ -11,11 +11,19 @@
   ;; conditions.lisp
   (:export
    #:protocol-condition
+   #:wire-condition
    #:printer-condition
    #:unprintable-object
+   #:object
    #:reader-condition
    #:incomplete-token
    #:unknown-symbol
+   #:symbol-designator
+   #:missing-update-argument
+   #:update
+   #:missing-id
+   #:missing-clock
+   #:unknown-wire-object
    #:incompatible-value-type-for-slot)
   ;; printer.lisp
   (:export)

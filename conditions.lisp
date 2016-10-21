@@ -9,7 +9,10 @@
 (define-condition protocol-condition (condition)
   ())
 
-(define-condition printer-condition (condition)
+(define-condition wire-condition (protocol-condition)
+  ())
+
+(define-condition printer-condition (wire-condition)
   ())
 
 (define-condition unprintable-object (error printer-condition)
@@ -17,7 +20,7 @@
   (:report (lambda (c s) (format s "The object~%  ~s~%cannot be printed to the lichat wire format."
                                  (object c)))))
 
-(define-condition reader-condition (condition)
+(define-condition reader-condition (wire-condition)
   ())
 
 (define-condition incomplete-token (error reader-condition)
@@ -29,7 +32,27 @@
   (:report (lambda (c s) (format s "The symbol ~a::~a was found on the wire, but is not interned locally."
                                  (car (symbol-designator c)) (cdr (symbol-designator c))))))
 
-(define-condition incompatible-value-type-for-slot (error)
+(define-condition missing-update-argument (wire-condition)
+  ((update :initarg :update :reader update))
+  (:report (lambda (c s) (format s "The update did not include all necessary arguments:~%  ~s"
+                                 (update c)))))
+
+(define-condition missing-id (error missing-update-argument)
+  ()
+  (:report (lambda (c s) (format s "The update did not include an ID argument:~%  ~s"
+                                 (update c)))))
+
+(define-condition missing-clock (error missing-update-argument)
+  ()
+  (:report (lambda (c s) (format s "The update did not include a CLOCK argument:~%  ~s"
+                                 (update c)))))
+
+(define-condition unknown-wire-object (error wire-condition)
+  ((update :initarg :update :reader update))
+  (:report (lambda (c s) (format s "A wireable of type ~s was sent, but is not known.~%  ~s"
+                                 (first (update c)) (update c)))))
+
+(define-condition incompatible-value-type-for-slot (protocol-condition error)
   ((object :initarg :object)
    (slot :initarg :slot)
    (value :initarg :value)

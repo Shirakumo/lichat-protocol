@@ -24,8 +24,23 @@
     (typecase sexpr
       (cons
        (check-type (first sexpr) symbol)
-       (loop for (key val) on (rest sexpr) by #'cddr
-             do (check-type key keyword))
-       (apply #'make-instance sexpr))
+       (let ((class (find-class (first sexpr) NIL)))
+         (unless class (error 'unknown-wire-object :update sexpr))
+         (cond ((c2mop:subclassp class (find-class 'update))
+                (let (id-found clock-found)
+                  (loop for (key val) on (rest sexpr) by #'cddr
+                        do (check-type key keyword)
+                           (case key
+                             (:id (setf id-found T))
+                             (:clock (setf clock-found T))))
+                  (unless id-found
+                    (error 'missing-id :update sexpr))
+                  (unless clock-found
+                    (error 'missing-clock :update sexpr)))
+                (apply #'make-instance sexpr))
+               ((c2mop:subclassp class (find-class 'wire-object))
+                (apply #'make-instance sexpr))
+               (T
+                (error 'unknown-wire-object :update sexpr)))))
       (T
        sexpr))))
