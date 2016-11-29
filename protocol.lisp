@@ -264,22 +264,6 @@
 (define-protocol-class too-many-updates (update-failure)
   ())
 
-;; Method calls that translate to updates on the wire
-;; (defgeneric connect (hostname username &key password))
-;; (defgeneric disconnect ())
-;; (defgeneric register (password))
-;; (defgeneric join (channel))
-;; (defgeneric leave (channel))
-;; (defgeneric create (&optional name))
-;; (defgeneric kick (user channel))
-;; (defgeneric pull (user channel))
-;; (defgeneric permissions (channel))
-;; (defgeneric (setf permissions) (perms channel))
-;; (defgeneric update (target update))
-;; (defgeneric send (text channel))
-;; (defgeneric users (channel))
-;; (defgeneric channels ())
-
 ;; The CLOCK field is omitted from each update in these illustrations,
 ;; but should be set to (get-universal-time) at the time the update
 ;; is constructed in a real application.
