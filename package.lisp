@@ -94,6 +94,8 @@
    #:channels
    #:channels
    #:user-info
+   #:registered
+   #:connections
    #:failure
    #:malformed-update
    #:connection-unstable
