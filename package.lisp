@@ -93,6 +93,7 @@
    #:users
    #:channels
    #:channels
+   #:user-info
    #:failure
    #:malformed-update
    #:connection-unstable

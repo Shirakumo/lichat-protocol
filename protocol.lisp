@@ -203,6 +203,10 @@
   ((channels :initarg :channels :accessor channels :type list))
   (:default-initargs :channels ()))
 
+(define-protocol-class user-info (target-update)
+  ((registered :initarg :registered :accessor registered :type boolean)
+   (connections :initarg :connections :accessor connections :type (integer 1))))
+
 ;; Errors
 (define-protocol-class failure (text-update)
   ())
