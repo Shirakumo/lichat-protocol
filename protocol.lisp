@@ -33,6 +33,7 @@
 
 (defparameter *default-primary-channel-permissions*
   '((permissions (:registrant))
+    (create T)
     (join T)
     (leave NIL)
     (kick (:registrant))
@@ -218,55 +219,75 @@
                                        :text (maybe-sval update 'text))))
 
 (define-protocol-class malformed-update (failure)
-  ())
+  ()
+  (:default-initargs :text "Update was malformed and could not be parsed."))
 
 (define-protocol-class connection-unstable (failure)
-  ())
+  ()
+  (:default-initargs :text "The connection is unstable. You may be disconnected soon."))
 
 (define-protocol-class update-failure (failure)
   ((update-id :initarg :update-id :accessor update-id :type id)))
 
 (define-protocol-class invalid-update (update-failure)
-  ())
+  ()
+  (:default-initargs :text "The update class is invalid."))
+
+(define-protocol-class username-mismatch (update-failure)
+  ()
+  (:default-initargs :text "The FROM field did not match the known username of the connection."))
 
 (define-protocol-class incompatible-version (update-failure)
-  ((compatible-versions :initarg :compatible-versions :accessor compatible-versions :type cons)))
+  ((compatible-versions :initarg :compatible-versions :accessor compatible-versions :type cons))
+  (:default-initargs :text "The server and client versions are not compatible."))
 
 (define-protocol-class invalid-password (update-failure)
-  ())
+  ()
+  (:default-initargs :text "Invalid username or password."))
 
 (define-protocol-class no-such-profile (update-failure)
-  ())
+  ()
+  (:default-initargs :text "No such profile could be found."))
 
 (define-protocol-class username-taken (update-failure)
-  ())
+  ()
+  (:default-initargs :text "The requested username is already taken."))
 
 (define-protocol-class no-such-channel (update-failure)
-  ())
+  ()
+  (:default-initargs :text "No such channel exists on the server."))
 
 (define-protocol-class already-in-channel (update-failure)
-  ())
+  ()
+  (:default-initargs :text "The user is already in the channel."))
 
 (define-protocol-class not-in-channel (update-failure)
-  ())
+  ()
+  (:default-initargs :text "The user is not part of the channel."))
 
 (define-protocol-class channelname-taken (update-failure)
-  ())
+  ()
+  (:default-initargs :text "The requested channelname is already taken."))
 
 (define-protocol-class bad-name (update-failure)
-  ())
+  ()
+  (:default-initargs :text "The specified name is not a valid name."))
 
 (define-protocol-class insufficient-permissions (update-failure)
-  ())
+  ()
+  (:default-initargs :text "You do not have sufficient permissions to perform the requested action."))
 
 (define-protocol-class invalid-permissions (update-failure)
-  ())
+  ()
+  (:default-initargs :text "The permissions are malformed."))
 
 (define-protocol-class no-such-user (update-failure)
-  ())
+  ()
+  (:default-initargs :text "The requested user does not exist."))
 
 (define-protocol-class too-many-updates (update-failure)
-  ())
+  ()
+  (:default-initargs :text "You have been sending too many updates and have been throttled."))
 
 ;; The CLOCK field is omitted from each update in these illustrations,
 ;; but should be set to (get-universal-time) at the time the update

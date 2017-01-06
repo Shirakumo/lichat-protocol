@@ -100,6 +100,7 @@
    #:update-failure
    #:update-id
    #:invalid-update
+   #:username-mismatch
    #:incompatible-version
    #:invalid-password
    #:no-such-profile
