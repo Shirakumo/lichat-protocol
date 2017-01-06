@@ -176,6 +176,12 @@
 (define-protocol-class text-update (update)
   ((text :initarg :text :accessor text :type string)))
 
+(defmethod print-object ((update text-update) stream)
+  (print-unreadable-object (update stream :type T)
+    (format stream "~s ~a ~s ~a ~s ~s" :from (maybe-sval update 'from)
+                                       :id (maybe-sval update 'id)
+                                       :text (maybe-sval update 'text))))
+
 (define-protocol-class join (channel-update)
   ())
 
@@ -212,12 +218,6 @@
 (define-protocol-class failure (text-update)
   ())
 
-(defmethod print-object ((update failure) stream)
-  (print-unreadable-object (update stream :type T)
-    (format stream "~s ~a ~s ~a ~s ~s" :from (maybe-sval update 'from)
-                                       :id (maybe-sval update 'id)
-                                       :text (maybe-sval update 'text))))
-
 (define-protocol-class malformed-update (failure)
   ()
   (:default-initargs :text "Update was malformed and could not be parsed."))
@@ -228,6 +228,12 @@
 
 (define-protocol-class update-failure (failure)
   ((update-id :initarg :update-id :accessor update-id :type id)))
+
+(defmethod print-object ((update update-failure) stream)
+  (print-unreadable-object (update stream :type T)
+    (format stream "~s ~a ~s ~a ~s ~a" :from (maybe-sval update 'from)
+                                       :id (maybe-sval update 'id)
+                                       :update-id (maybe-sval update 'update-id))))
 
 (define-protocol-class invalid-update (update-failure)
   ()
