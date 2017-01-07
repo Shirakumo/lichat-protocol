@@ -8,18 +8,20 @@
 
 (defun print-sexpr-list (list stream)
   (write-char #\( stream)
-  (loop for (item . rest) on list
-        do (print-sexpr item stream)
-           (when rest (write-char #\  stream)))
-  (write-char #\) stream))
+  (unwind-protect
+       (loop for (item . rest) on list
+             do (print-sexpr item stream)
+                (when rest (write-char #\  stream)))
+    (write-char #\) stream)))
 
 (defun print-sexpr-string (string stream)
   (write-char #\" stream)
-  (loop for char across string
-        do (when (char= char #\")
-             (write-char #\\ stream))
-           (write-char char stream))
-  (write-char #\" stream))
+  (unwind-protect
+       (loop for char across string
+             do (when (char= char #\")
+                  (write-char #\\ stream))
+                (write-char char stream))
+    (write-char #\" stream)))
 
 (defun print-sexpr-number (number stream)
   (etypecase number
