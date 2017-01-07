@@ -99,29 +99,29 @@
     (format stream "~a" (maybe-sval object 'name))))
 
 (define-protocol-class profile (named-object server-object)
-  ((name :type username)
-   (password :initarg :password :accessor password :type password)
-   (lifetime :initarg :lifetime :accessor lifetime :type (integer 0)))
+  ((name :slot-type username)
+   (password :initarg :password :accessor password :slot-type password)
+   (lifetime :initarg :lifetime :accessor lifetime :slot-type (integer 0)))
   (:default-initargs
    :lifetime *default-profile-lifetime*))
 
 (define-protocol-class user (named-object server-object)
-  ((connections :initarg :connections :accessor connections :type list)
-   (channels :initarg :channels :accessor channels :type list))
+  ((connections :initarg :connections :accessor connections :slot-type list)
+   (channels :initarg :channels :accessor channels :slot-type list))
   (:default-initargs
    :connections ()
    :channels ()))
 
 (define-protocol-class connection (server-object)
-  ((user :initarg :user :accessor user :type (or null user))
-   (hostname :initarg :hostname :accessor hostname :type string)
-   (port :initarg :port :accessor port :type (integer 0))))
+  ((user :initarg :user :accessor user :slot-type (or null user))
+   (hostname :initarg :hostname :accessor hostname :slot-type string)
+   (port :initarg :port :accessor port :slot-type (integer 0))))
 
 (define-protocol-class channel (named-object server-object)
-  ((name :type channelname)
-   (permissions :initarg :permissions :accessor permissions :type list)
-   (lifetime :initarg :lifetime :accessor lifetime :type (integer 0))
-   (users :initarg :users :accessor users :type list))
+  ((name :slot-type channelname)
+   (permissions :initarg :permissions :accessor permissions :slot-type list)
+   (lifetime :initarg :lifetime :accessor lifetime :slot-type (integer 0))
+   (users :initarg :users :accessor users :slot-type list))
   (:default-initargs
    :permissions ()
    :lifetime *default-channel-lifetime*
@@ -132,9 +132,9 @@
   ())
 
 (define-protocol-class update (wire-object)
-  ((id :initarg :id :accessor id :type id)
-   (clock :initarg :clock :accessor clock :type integer)
-   (from :initarg :from :accessor from :type username))
+  ((id :initarg :id :accessor id :slot-type id)
+   (clock :initarg :clock :accessor clock :slot-type integer)
+   (from :initarg :from :accessor from :slot-type username))
   (:default-initargs
    :id (next-id)
    :clock (get-universal-time)))
@@ -145,18 +145,14 @@
                                  :id (maybe-sval update 'id))))
 
 (define-protocol-class ping (update)
-  ((clock :initarg :clock :accessor clock :type integer))
-  (:default-initargs
-   :clock (get-universal-time)))
+  ())
 
 (define-protocol-class pong (update)
-  ((clock :initarg :clock :accessor clock :type integer))
-  (:default-initargs
-   :clock (get-universal-time)))
+  ())
 
 (define-protocol-class connect (update)
-  ((password :initarg :password :accessor password :type (or null password))
-   (version :initarg :version :accessor version :type string))
+  ((password :initarg :password :accessor password :slot-type (or null password))
+   (version :initarg :version :accessor version :slot-type string))
   (:default-initargs
    :password NIL
    :version (protocol-version)))
@@ -165,16 +161,16 @@
   ())
 
 (define-protocol-class register (update)
-  ((password :initarg :password :accessor password :type password)))
+  ((password :initarg :password :accessor password :slot-type password)))
 
 (define-protocol-class channel-update (update)
-  ((channel :initarg :channel :accessor channel :type channelname)))
+  ((channel :initarg :channel :accessor channel :slot-type channelname)))
 
 (define-protocol-class target-update (update)
-  ((target :initarg :target :accessor target :type username)))
+  ((target :initarg :target :accessor target :slot-type username)))
 
 (define-protocol-class text-update (update)
-  ((text :initarg :text :accessor text :type string)))
+  ((text :initarg :text :accessor text :slot-type string)))
 
 (defmethod print-object ((update text-update) stream)
   (print-unreadable-object (update stream :type T)
@@ -189,7 +185,8 @@
   ())
 
 (define-protocol-class create (channel-update)
-  ())
+  ((channel :initarg :channel :accessor channel :slot-type (or null channelname)))
+  (:default-initargs :channel NIL))
 
 (define-protocol-class kick (channel-update target-update)
   ())
@@ -198,21 +195,22 @@
   ())
 
 (define-protocol-class permissions (channel-update)
-  ((permissions :initarg :permissions :accessor permissions :type list)))
+  ((permissions :initarg :permissions :accessor permissions :slot-type list)))
 
 (define-protocol-class message (channel-update text-update)
   ())
 
 (define-protocol-class users (channel-update)
-  ((users :initarg :users :accessor users :type list)))
+  ((users :initarg :users :accessor users :slot-type list))
+  (:default-initargs :users ()))
 
 (define-protocol-class channels (update)
-  ((channels :initarg :channels :accessor channels :type list))
+  ((channels :initarg :channels :accessor channels :slot-type list))
   (:default-initargs :channels ()))
 
 (define-protocol-class user-info (target-update)
-  ((registered :initarg :registered :accessor registered :type boolean)
-   (connections :initarg :connections :accessor connections :type (integer 1))))
+  ((registered :initarg :registered :accessor registered :slot-type boolean)
+   (connections :initarg :connections :accessor connections :slot-type (integer 1))))
 
 ;; Errors
 (define-protocol-class failure (text-update)
@@ -227,7 +225,7 @@
   (:default-initargs :text "The connection is unstable. You may be disconnected soon."))
 
 (define-protocol-class update-failure (failure)
-  ((update-id :initarg :update-id :accessor update-id :type id)))
+  ((update-id :initarg :update-id :accessor update-id :slot-type id)))
 
 (defmethod print-object ((update update-failure) stream)
   (print-unreadable-object (update stream :type T)
@@ -244,7 +242,7 @@
   (:default-initargs :text "The FROM field did not match the known username of the connection."))
 
 (define-protocol-class incompatible-version (update-failure)
-  ((compatible-versions :initarg :compatible-versions :accessor compatible-versions :type cons))
+  ((compatible-versions :initarg :compatible-versions :accessor compatible-versions :slot-type cons))
   (:default-initargs :text "The server and client versions are not compatible."))
 
 (define-protocol-class invalid-password (update-failure)
