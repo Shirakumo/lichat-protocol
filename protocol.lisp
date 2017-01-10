@@ -210,7 +210,8 @@
 
 (define-protocol-class user-info (target-update)
   ((registered :initarg :registered :accessor registered :slot-type boolean)
-   (connections :initarg :connections :accessor connections :slot-type (integer 1))))
+   (connections :initarg :connections :accessor connections :slot-type (integer 1)))
+  (:default-initargs :registered NIL :connections 1))
 
 ;; Errors
 (define-protocol-class failure (text-update)
