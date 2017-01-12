@@ -6,7 +6,7 @@
 
 (in-package #:org.shirakumo.lichat.protocol)
 
-(defvar *id-counter* 0)
+(defvar *id-counter* (random (get-universal-time) (make-random-state T)))
 
 (defparameter *default-profile-lifetime* (* 60 60 24 365))
 (defparameter *default-channel-lifetime* (* 60 60 24 30))
