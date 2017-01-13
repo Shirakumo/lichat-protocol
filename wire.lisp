@@ -17,7 +17,7 @@
                   stream))
     (wireable
      (print-sexpr wireable stream)))
-  (terpri stream)
+  ;; (terpri stream)
   (force-output stream))
 
 (defun from-wire (stream)
