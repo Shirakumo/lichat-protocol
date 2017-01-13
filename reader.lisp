@@ -13,6 +13,8 @@
                                             #x200A #x2028 #x2029 #x202F #x205F #x3000
                                             #x180E #x200B #x200C #x200D #x2060 #xFEFF))
   #-asdf-unicode (map 'vector #'code-char '(#x0009 #x000A #x000B #x000C #x000D #x0020)))
+(defvar *errors* NIL)
+(defvar *invalid-symbol* (make-symbol "INVALID-SYMBOL"))
 
 (defun whitespace-p (char)
   (find char *whitespace*))
@@ -25,7 +27,8 @@
 (defun safe-find-symbol (name package)
   (let ((package (find-package package)))
     (or (find-symbol name package)
-        (error 'unknown-symbol :symbol-designator (cons (package-name package) name)))))
+        (progn (push (make-condition 'unknown-symbol :symbol-designator (cons (package-name package) name)) *errors*)
+               *invalid-symbol*))))
 
 (defun read-sexpr-list (stream)
   (prog1 (loop do (skip-whitespace stream)
@@ -87,18 +90,23 @@
 
 (defun read-sexpr (stream)
   (skip-whitespace stream)
-  (let ((char (read-char stream)))
-    (handler-bind
-        ((end-of-file (lambda (err)
-                        (declare (ignore err))
-                        (error 'incomplete-token))))
-      (case char
-        (#\( (read-sexpr-list stream))
-        (#\) (error 'incomplete-token))
-        (#\" (read-sexpr-string stream))
-        ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\.)
-         (unread-char char stream)
-         (read-sexpr-number stream))
-        (#\: (read-sexpr-keyword stream))
-        (T (unread-char char stream)
-         (read-sexpr-symbol stream))))))
+  (let* ((char (read-char stream))
+         (*errors* NIL)
+         (sexpr (handler-bind
+                    ((end-of-file (lambda (err)
+                                    (declare (ignore err))
+                                    (error 'incomplete-token))))
+                  (case char
+                    (#\( (read-sexpr-list stream))
+                    (#\) (error 'incomplete-token))
+                    (#\" (read-sexpr-string stream))
+                    ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\.)
+                     (unread-char char stream)
+                     (read-sexpr-number stream))
+                    (#\: (read-sexpr-keyword stream))
+                    (T (unread-char char stream)
+                     (read-sexpr-symbol stream))))))
+    (when *errors*
+      (dolist (err *errors*)
+        (cerror "Ignore reader error." err)))
+    sexpr))
