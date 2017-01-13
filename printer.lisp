@@ -47,7 +47,7 @@
      (print-sexpr-token (symbol-name sexpr) stream))
     (T
      (print-sexpr-token (package-name (symbol-package sexpr)) stream)
-     (write-char #\:)
+     (write-char #\: stream)
      (print-sexpr-token (symbol-name sexpr) stream))))
 
 (defun print-sexpr (sexpr stream)
