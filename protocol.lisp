@@ -195,7 +195,8 @@
   ())
 
 (define-protocol-class permissions (channel-update)
-  ((permissions :initarg :permissions :accessor permissions :slot-type list)))
+  ((permissions :initarg :permissions :accessor permissions :slot-type list))
+  (:default-initargs :permissions NIL))
 
 (define-protocol-class message (channel-update text-update)
   ())
