@@ -25,7 +25,7 @@
   '((permissions NIL)
     (join NIL)
     (leave T)
-    (kick NIL)
+    (kick (:registrant))
     (pull T)
     (message T)
     (users NIL)
