@@ -68,12 +68,12 @@
 (defun read-sexpr-token (stream)
   (peek-char NIL stream)
   (with-output-to-string (out)
-    (loop for char = (char-upcase (read-char stream NIL))
+    (loop for char = (read-char stream NIL)
           do (case char
                (#\\ (write-char (read-char stream) out))
                ((#\" #\( #\) #\: #\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\. #\ ) (unread-char char stream) (return))
                ((NIL) (return))
-               (T (write-char char out))))))
+               (T (write-char (char-upcase char) out))))))
 
 (defun read-sexpr-symbol (stream)
   (let ((token (read-sexpr-token stream)))
