@@ -106,7 +106,8 @@
    :lifetime *default-profile-lifetime*))
 
 (define-protocol-class user (named-object server-object)
-  ((connections :initarg :connections :accessor connections :slot-type list)
+  ((name :slot-type username)
+   (connections :initarg :connections :accessor connections :slot-type list)
    (channels :initarg :channels :accessor channels :slot-type list))
   (:default-initargs
    :connections ()
