@@ -34,15 +34,15 @@ The server must keep track of a number of objects that are related to the curren
 Each client is connected to the server through a `connection` object. Each connection in turn is tied to a user object. A user may have up to an implementation-dependant number of connections at the same time.
 
 #### User
-`user`s represent participants on the chat network. A user has a globally unique name and a number of connections that can act as the user. Each user can be active in a number of channels, the maximal number of which is implementation-dependant. A user must always inhabit the primary channel. A user may have a profile object associated with it. When such a profile exists, the user is considered to be "registered."
+`user`s represent participants on the chat network. A user has a globally unique name and a number of connections that can act as the user. Each user can be active in a number of channels, the maximal number of which is implementation-dependant. A user must always inhabit the primary channel. A user may have a profile object associated with it. When such a profile exists, the user is considered to be "registered." The server itself must also have an associated user object, the name of which is up to the specific server instance.
 
 #### Profile
-The `profile` primarily exists to allow users to log in to a user through a password and thus secure the username from being taken by others. A profile has a maximal lifetime. If the user associated with the profile has not been used for longer than the profile's lifetime, the profile is deleted.
+The `profile` primarily exists to allow end-users to log in to a user through a password and thus secure the username from being taken by others. A profile has a maximal lifetime. If the user associated with the profile has not been used for longer than the profile's lifetime, the profile is deleted.
 
 #### Channel
 `channel`s represent communication channels for users over which they can send messages to each other. A channel has a set of permission rules that constrain what kind of updates may be performed on the channel by whom. There are three types of channels that only differ in their naming scheme and their permissions:
 
-* **primary channels** -- Only one of these can exist on any server, and it must be named the same as the server's user. All users that are currently connected to the server must inhabit this channel. The channel may not be used for sending messages by anyone except for system administrators or the server itself. The primary channel is also used for updates that are "channel-less," to check them for permissions.
+* **primary channels** -- Exactly one of these must exist on any server, and it must be named the same as the server's user. All users that are currently connected to the server must inhabit this channel. The channel may not be used for sending messages by anyone except for system administrators or the server itself. The primary channel is also used for updates that are "channel-less," to check them for permissions.
 * **anonymous channels** -- Anonymous channels must have a random name that is prefixed with an `@`. Their permissions must prevent users that are not already part of the channel from sending `join`, `channels`, `users`, or any other kind of update to it, thus essentially making it invisible safe for specially invited users.
 * **regular channels** -- Any other channel is considered a "regular channel".
 
