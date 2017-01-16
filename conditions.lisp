@@ -52,10 +52,15 @@
   (:report (lambda (c s) (format s "A wireable of type ~s was sent, but is not known.~%  ~s"
                                  (first (update c)) (update c)))))
 
+(define-condition malformed-wire-object (error wire-condition)
+  ((update :initarg :update :reader update))
+  (:report (lambda (c s) (format s "A wireable was found but is not properly formed.~%  ~s"
+                                 (update c)))))
+
 (define-condition incompatible-value-type-for-slot (protocol-condition error)
-  ((object :initarg :object)
-   (slot :initarg :slot)
-   (value :initarg :value)
-   (type :initarg :type))
+  ((object :initarg :object :reader object)
+   (slot :initarg :slot :reader slot)
+   (value :initarg :value :reader value)
+   (type :initarg :type :reader reqtype))
   (:report (lambda (c s) (format s "Setting ~s as value of slot ~s on ~s failed as it is not of type ~s."
                                  (slot-value c 'value) (slot-value c 'slot) (slot-value c 'object) (slot-value c 'type)))))

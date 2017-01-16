@@ -24,13 +24,15 @@
   (let ((sexpr (read-sexpr stream)))
     (typecase sexpr
       (cons
-       (check-type (first sexpr) symbol)
+       (unless (typep (first sexpr) 'symbol)
+         (error 'malformed-wire-object :update sexpr))
        (let ((class (find-class (first sexpr) NIL)))
          (unless class (error 'unknown-wire-object :update sexpr))
          (cond ((c2mop:subclassp class (find-class 'update))
                 (let (id-found clock-found)
                   (loop for (key val) on (rest sexpr) by #'cddr
-                        do (check-type key keyword)
+                        do (unless (typep (first sexpr) 'keyword)
+                             (error 'malformed-wire-object :update sexpr))
                            (case key
                              (:id (setf id-found T))
                              (:clock (setf clock-found T))))
