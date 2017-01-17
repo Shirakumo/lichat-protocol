@@ -59,7 +59,7 @@ The client and the server communicate through `update` objects over a connection
 
 When an update is sent to a channel, it is distributed to all the users currently in the channel. When an update is sent to a user, it is distributed to all the connections of the user. When an update is sent to a connection, it is serialised to the wire according to the above wire format specification. The actual underlying mechanism that transfers the characters of the wire format to the remote host is implementation-dependant.
 
-### 4 Connection
+### 4. Connection
 #### 4.1 Establishment
 After the connection between a client and a server has been established through some implementation-dependant means, the client must send a `connect` update. The update will attempt to register the user on the server, as follows:
 
@@ -185,6 +185,12 @@ The list of users currently in a channel can be retrieved by the `users` update,
 Finally, information about a particular user can be retrieved by the `user-info` update, after which the server acts as follows:
 
 1. A `user-info` update with the same `id` as the request is sent back with the `connections` field set to the number of connections the user object has associated with it and with the `registered` field set to `T` if the user has a profile associated with it.
+
+### 6. Protocol Extension
+A server or client may provide extensions to the protocol in the following manners:
+
+* **Additional Update Types** -- If such an update is sent to a client that does not recognise it, it should be ignored. If such an update is sent to a server that does not recognise it, the server will respond with an `invalid-update`.
+* **Additional Update Fields** -- A client or server may extend the existing update classes with additional, optional fields to provide further information or other kinds of behaviour. The server or client is not allowed to introduce additional required fields. When an update with unknown initargs is received, the unknown initargs are to be ignored.
 
 ## See Also
 
