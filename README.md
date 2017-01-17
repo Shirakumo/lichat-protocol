@@ -194,6 +194,6 @@ A server or client may provide extensions to the protocol in the following manne
 
 ## See Also
 
-1. [lichat-serverlib](https://shirakumo.org/projects/lichat-serverlib) An agnostic implementation of the server-side protocol.
-1. [lichat-tcp-server](https://shirakumo.org/projects/lichat-tcp-server) A basic, threaded, TCP-based implementation of a Lichat server.
-1. [lichat-tcp-client](https://shirakumo.org/projects/lichat-tcp-client) A basic, threaded, TCP-based implementation of a Lichat client.
+* [lichat-serverlib](https://shirakumo.org/projects/lichat-serverlib) An agnostic implementation of the server-side protocol.
+* [lichat-tcp-server](https://shirakumo.org/projects/lichat-tcp-server) A basic, threaded, TCP-based implementation of a Lichat server.
+* [lichat-tcp-client](https://shirakumo.org/projects/lichat-tcp-client) A basic, threaded, TCP-based implementation of a Lichat client.
