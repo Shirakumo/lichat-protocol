@@ -31,7 +31,7 @@
          (cond ((c2mop:subclassp class (find-class 'update))
                 (let (id-found clock-found)
                   (loop for (key val) on (rest sexpr) by #'cddr
-                        do (unless (typep (first sexpr) 'keyword)
+                        do (unless (typep key 'keyword)
                              (error 'malformed-wire-object :update sexpr))
                            (case key
                              (:id (setf id-found T))
