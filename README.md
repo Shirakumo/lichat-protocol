@@ -199,3 +199,4 @@ A server or client may provide extensions to the protocol in the following manne
 * [lichat-serverlib](https://shirakumo.github.io/lichat-serverlib) An agnostic implementation of the server-side protocol.
 * [lichat-tcp-server](https://shirakumo.github.io/lichat-tcp-server) A basic, threaded, TCP-based implementation of a Lichat server.
 * [lichat-tcp-client](https://shirakumo.github.io/lichat-tcp-client) A basic, threaded, TCP-based implementation of a Lichat client.
+* [LionChat](https://github.com/Shirakumo/lionchat) A Qt GUI client for a TCP server.
