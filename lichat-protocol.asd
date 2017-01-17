@@ -11,7 +11,7 @@
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "The independent protocol part of Lichat."
-  :homepage "https://github.com/Shinmera/lichat"
+  :homepage "https://github.com/Shirakumo/lichat-protocol"
   :serial T
   :components ((:file "package")
                (:file "conditions")
