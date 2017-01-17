@@ -99,6 +99,7 @@
    #:failure
    #:malformed-update
    #:connection-unstable
+   #:too-many-connections
    #:update-failure
    #:update-id
    #:invalid-update

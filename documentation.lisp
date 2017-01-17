@@ -643,6 +643,11 @@ See FAILURE")
 
 See FAILURE")
 
+  (type too-many-connections
+    "Update in response to too many connections being requested on the server globally, or for a single user.
+
+See FAILURE")
+
   (type update-failure
     "Update in response to an update request that failed.
 

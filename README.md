@@ -63,11 +63,13 @@ When an update is sent to a channel, it is distributed to all the users currentl
 #### 4.1 Establishment
 After the connection between a client and a server has been established through some implementation-dependant means, the client must send a `connect` update. The update will attempt to register the user on the server, as follows:
 
+1. If the server cannot sustain more connections, a `too-many-connections` update is returned and the connection is closed.
 1. If the update's `version` denotes a version that is not compatible to the version of the protocol on the server, an `incompatible-version` update is returned and the connection is closed. 
 1. If the update's `from` field contains an invalid name, a `bad-name` update is returned and the connection is closed.
 1. If the update does not contain a `password`, and the `from` field denotes a username that is already taken by an active user or a registered user, an `username-taken` update is returned and the connection is closed. 
 1. If the update does contain a `password`, and the `from` field denotes a username that is not registered, a `no-such-profile` update is returned and the connection is closed.
 1. If the update does contain a `password`, and the `from` field denotes a username that is registered, but whose password does not match the given one, an `invalid-password` update is returned and the connection is closed.
+1. If the server cannot sustain more connections for the requested user, a `too-many-connections` update is returned and the connection is closed.
 1. A user corresponding in name to the `from` field is created if it does not yet exist.
 1. The connection is tied to its corresponding user object.
 1. The server responds with a `connect` update of the same id as the one the client sent. The `from` field must correspond to the server's user object's name.

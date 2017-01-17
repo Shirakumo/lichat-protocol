@@ -227,6 +227,10 @@
   ()
   (:default-initargs :text "The connection is unstable. You may be disconnected soon."))
 
+(define-protocol-class too-many-connections (failure)
+  ()
+  (:default-initargs :text "There are too many connections for this user or on this server."))
+
 (define-protocol-class update-failure (failure)
   ((update-id :initarg :update-id :accessor update-id :slot-type id)))
 
