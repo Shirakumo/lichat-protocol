@@ -407,7 +407,7 @@ See UPDATE")
 See PING
 See UPDATE")
 
-  (type connect
+  (type connection
     "Update to represent a connection request.
 
 This update must be the first thing sent by the client upon
@@ -455,6 +455,11 @@ See UPDATE")
 
 See CHANNEL
 See UPDATE")
+
+  (function channel
+    "Accessor to the name of the channel the update relates to.
+
+See CHANNEL-UPDATE")
 
   (type target-update
     "Superclass for all updates that target a user.
