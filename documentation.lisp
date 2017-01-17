@@ -310,7 +310,7 @@ See USER-INFO")
 See USER
 See CHANNELS")
 
-  (function connection
+  (type connection
     "Class to represent a connection of a user.
 
 See SERVER-OBJECT
@@ -407,7 +407,7 @@ See UPDATE")
 See PING
 See UPDATE")
 
-  (type connection
+  (type connect
     "Update to represent a connection request.
 
 This update must be the first thing sent by the client upon
