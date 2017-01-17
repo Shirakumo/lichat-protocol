@@ -40,9 +40,9 @@
                     (error 'missing-id :update sexpr))
                   (unless clock-found
                     (error 'missing-clock :update sexpr)))
-                (apply #'make-instance :allow-other-keys T sexpr))
+                (apply #'make-instance (first sexpr) :allow-other-keys T (rest sexpr)))
                ((c2mop:subclassp class (find-class 'wire-object))
-                (apply #'make-instance :allow-other-keys T sexpr))
+                (apply #'make-instance (first sexpr) :allow-other-keys T (rest sexpr)))
                (T
                 (error 'unknown-wire-object :update sexpr)))))
       (T
