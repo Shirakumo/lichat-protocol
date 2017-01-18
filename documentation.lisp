@@ -314,25 +314,13 @@ See CHANNELS")
     "Class to represent a connection of a user.
 
 See SERVER-OBJECT
-See USER
-See HOSTNAME
-See PORT")
+See USER")
 
   (function user
     "Accessor to the user tied to the connection.
 
 See CONNECTION
 See USER")
-
-  (function hostname
-    "Accessor to the hostname of the connection.
-
-See CONNECTION")
-
-  (function port
-    "Accessor to the port of the connection.
-
-See CONNECTION")
 
   (type channel
     "Class to represent a channel.

@@ -114,9 +114,7 @@
    :channels ()))
 
 (define-protocol-class connection (server-object)
-  ((user :initarg :user :accessor user :slot-type (or null user))
-   (hostname :initarg :hostname :accessor hostname :slot-type string)
-   (port :initarg :port :accessor port :slot-type (integer 0))))
+  ((user :initarg :user :accessor user :slot-type (or null user))))
 
 (define-protocol-class channel (named-object server-object)
   ((name :slot-type channelname)

@@ -58,8 +58,6 @@
    #:channels
    #:connection
    #:user
-   #:hostname
-   #:port
    #:channel
    #:permissions
    #:lifetime
