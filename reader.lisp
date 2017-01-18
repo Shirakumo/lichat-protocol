@@ -26,9 +26,11 @@
 
 (defun safe-find-symbol (name package)
   (let ((package (find-package package)))
-    (or (find-symbol name package)
-        (progn (push (make-condition 'unknown-symbol :symbol-designator (cons (package-name package) name)) *errors*)
-               *invalid-symbol*))))
+    (if (string= name "NIL")
+        NIL
+        (or (find-symbol name package)
+            (progn (push (make-condition 'unknown-symbol :symbol-designator (cons (package-name package) name)) *errors*)
+                   *invalid-symbol*)))))
 
 (defun read-sexpr-list (stream)
   (prog1 (loop do (skip-whitespace stream)
