@@ -115,7 +115,7 @@
 
 (define-protocol-class connection (server-object)
   ((user :initarg :user :accessor user :slot-type (or null user)))
-  (:efault-initargs
+  (:default-initargs
    :user NIL))
 
 (define-protocol-class channel (named-object server-object)
