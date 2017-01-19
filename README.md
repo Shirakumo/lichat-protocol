@@ -34,15 +34,26 @@ Each client is connected to the server through a `connection` object. Each conne
 #### 2.2 User
 `user`s represent participants on the chat network. A user has a globally unique name and a number of connections that can act as the user. Each user can be active in a number of channels, the maximal number of which is implementation-dependant. A user must always inhabit the primary channel. A user may have a profile object associated with it. When such a profile exists, the user is considered to be "registered." The server itself must also have an associated user object, the name of which is up to the specific server instance.
 
+##### 2.2.1 User Name Constraints
+A user's name must be between 1 and 32 characters long, where each character must be from the Unicode general categories Letter, Mark, Number, Punctuation, and Symbol, or be a Space (`U+0020`). For a comprehensive list of allowed code-points, see the [unicode.lisp](unicode.lisp) definition file.
+
 #### 2.3 Profile
 The `profile` primarily exists to allow end-users to log in to a user through a password and thus secure the username from being taken by others. A profile has a maximal lifetime. If the user associated with the profile has not been used for longer than the profile's lifetime, the profile is deleted.
 
 #### 2.4 Channel
-`channel`s represent communication channels for users over which they can send messages to each other. A channel has a set of permission rules that constrain what kind of updates may be performed on the channel by whom. There are three types of channels that only differ in their naming scheme and their permissions:
+`channel`s represent communication channels for users over which they can send messages to each other. A channel has a set of permission rules that constrain what kind of updates may be performed on the channel by whom. There are three types of channels that only differ in their naming scheme and their permissions.
 
-* **primary channels** -- Exactly one of these must exist on any server, and it must be named the same as the server's user. All users that are currently connected to the server must inhabit this channel. The channel may not be used for sending messages by anyone except for system administrators or the server itself. The primary channel is also used for updates that are "channel-less," to check them for permissions.
-* **anonymous channels** -- Anonymous channels must have a random name that is prefixed with an `@`. Their permissions must prevent users that are not already part of the channel from sending `join`, `channels`, `users`, or any other kind of update to it, thus essentially making it invisible safe for specially invited users.
-* **regular channels** -- Any other channel is considered a "regular channel".
+##### 2.4.1 Primary Channels
+Exactly one of these must exist on any server, and it must be named the same as the server's user. All users that are currently connected to the server must inhabit this channel. The channel may not be used for sending messages by anyone except for system administrators or the server itself. The primary channel is also used for updates that are "channel-less," to check them for permissions.
+
+##### 2.4.2 Anonymous Channels
+Anonymous channels must have a random name that is prefixed with an `@`. Their permissions must prevent users that are not already part of the channel from sending `join`, `channels`, `users`, or any other kind of update to it, thus essentially making it invisible safe for specially invited users.
+
+##### 2.4.3 Regular Channels
+Any other channel is considered a "regular channel".
+
+##### 2.4.4 Channel Name Constraints
+The names of channels are constrained in the same way as user names. See §2.2.1.
 
 #### 2.5 Permission Rules
 A permission rule specifies the restrictions of an update type on who is allowed to perform the update on the channel. The structure is as follows:
