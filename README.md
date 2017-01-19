@@ -7,15 +7,16 @@ The wire format is based on UTF-8 character streams on which objects are seriali
 
 ```BNF
 WIREABLE ::= OBJECT | STRING | SYMBOL | NUMBER
-OBJECT   ::= '(' SYMBOL (KEYWORD EXPR)* ')'
+OBJECT   ::= '(' WHITE* SYMBOL (WHITE* KEYWORD WHITE* EXPR)* WHITE* ')'
 EXPR     ::= STRING | LIST | SYMBOL | NUMBER
 STRING   ::= '"' ('\' '"' | !'"')* '"'
-LIST     ::= '(' EXPR* ')'
+LIST     ::= '(' WHITE* EXPR* WHITE* ')'
 SYMBOL   ::= KEYWORD | '#' ':' NAME | NAME ':' NAME
 KEYWORD  ::= ':' NAME
 NUMBER   ::= '0..9'+ ( '.' '0..9'*)? | '.' '0..9'*
 NAME     ::= (('\' TERMINAL) | !TERMINAL)+
 TERMINAL ::= ('0..9' | ':' | ' ' | '"' | '.' | '(' | ')')
+WHITE    ::= U+0009 | U+000A | U+000B | U+000C | U+000D | U+0020
 ```
 
 Special care must be taken when reading and printing symbols. Symbols that come from the `lichat-protocol` package must be printed without the package name prefix. Symbols from the `keyword` package must be printed by their name only prefixed by a `:`. Symbols without a package must be printed by their name only and prefixed by a `#:`. Every other symbol must be prefixed by the symbol's package's name followed by a `:`. When a symbol is read, it is checked whether it exists in the corresponding package laid out by the previous rules. If it does not exist, the expression is not valid and an error must be generated, but only after the expression has been read to completion.
