@@ -47,14 +47,14 @@
 
 (defun username-p (name)
   (and (stringp name)
-       (<= 1 (length name) 32)))
+       (<= 1 (length name) 32)
+       (every #'valid-name-char-p name)))
 
 (deftype username ()
   `(satisfies username-p))
 
 (defun channelname-p (name)
-  (and (stringp name)
-       (<= 1 (length name) 32)))
+  (username-p name))
 
 (deftype channelname ()
   `(satisfies channelname-p))
