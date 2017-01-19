@@ -37,18 +37,15 @@
 (defun print-sexpr-symbol (sexpr stream)
   (case (symbol-package sexpr)
     (#.(find-package :keyword)
-     (write-char #\: stream)
-     (print-sexpr-token (symbol-name sexpr) stream))
-    (#.*package*
-     (print-sexpr-token (symbol-name sexpr) stream))
+     (write-char #\: stream))
+    (#.*package*)
     ((NIL)
      (write-char #\# stream)
-     (write-char #\: stream)
-     (print-sexpr-token (symbol-name sexpr) stream))
+     (write-char #\: stream))
     (T
      (print-sexpr-token (package-name (symbol-package sexpr)) stream)
-     (write-char #\: stream)
-     (print-sexpr-token (symbol-name sexpr) stream))))
+     (write-char #\: stream)))
+  (print-sexpr-token (symbol-name sexpr) stream))
 
 (defun print-sexpr (sexpr stream)
   (typecase sexpr
