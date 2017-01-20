@@ -14,7 +14,6 @@
   :homepage "https://github.com/Shirakumo/lichat-protocol"
   :serial T
   :components ((:file "package")
-               (:file "unicode")
                (:file "conditions")
                (:file "printer")
                (:file "reader")
@@ -23,4 +22,5 @@
                (:file "wire")
                (:file "documentation"))
   :depends-on (:documentation-utils
-               :closer-mop))
+               :closer-mop
+               #-sbcl :cl-unicode))

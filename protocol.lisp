@@ -45,6 +45,13 @@
 (deftype wireable ()
   `(or real string cons symbol wire-object))
 
+(defun valid-name-char-p (c)
+  (or (char= #\Space c)
+      (let ((category (char #+sbcl (symbol-name (sb-unicode:general-category c))
+                            #-sbcl (cl-unicode:general-category c) 0)))
+        (not (or (char= category #\Z)
+                 (char= category #\C))))))
+
 (defun username-p (name)
   (and (stringp name)
        (<= 1 (length name) 32)
