@@ -8,7 +8,7 @@
 
 (defvar *id-counter* (random (get-universal-time) (make-random-state T)))
 
-(defparameter *default-profile-lifetime* (* 60 60 24 365))
+(defparameter *default-profile-lifetime* (* 60 60 24 30))
 (defparameter *default-channel-lifetime* (* 60 60 24 30))
 
 (defparameter *default-regular-channel-permissions*

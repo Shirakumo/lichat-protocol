@@ -64,7 +64,7 @@ EXPR     ::= COMPOUND | username | t | nil
 COMPOUND ::= (not EXPR) | (or EXPR*) | (and EXPR*)
 ```
 
-Where `type` is the name of an update class, and `username` is the name of a user object. `t` represents "anyone" and `nil` represents "no one". The compound operators combine the expressions logically as sensible. The expressions within the rule are combined as by an `or` compound.
+Where `type` is the name of an update class, and `username` is the name of a user object. `t` is the CL symbol `T` and indicates "anyone". `nil` is the CL symbol `NIL` and indicates "no one". The compound operators combine the expressions logically as sensible. The expressions within the rule are combined as by an `or` compound.
 
 ### 3. General Interaction
 The client and the server communicate through `update` objects over a connection. Each such object that is issued from the client must contain a unique `id`. This is important as the ID is reused by the server in order to communicate replies. The client can then compare the ID of the incoming updates to find the response to an earlier request, as responses may be reordered or delayed. The server does not check the ID in any way-- uniqueness and avoidance of clashing is the responsibility of the client. Each update must also contain a `clock` slot that specifies the time of sending. This is used to calculate latency and potential connection problems.
@@ -122,7 +122,7 @@ When a user sends a `register` update, the server must act as follows:
 
 1. If a profile of the same name as the user does not already exist, the profile is created.
 1. The password of the profile associated to the user is changed to match the one from the update.
-1. The profile must stay live until at least 365 days after the user associated with the profile has existed on the server.
+1. The profile must stay live until at least 30 days after the user associated with the profile has existed on the server.
 
 Note that the server does not need to store the password verbatim, and is instead advised to only store and compare a hash of it.
 
@@ -137,7 +137,7 @@ Since a channel has only two bits of information associated with it, the managem
 
 From there on out the channel's permissions can be viewed or changed with the `permissions` update, if the channel allows you to do so. Note that the server must only update the channel's permissions, if the update's `permissions` field is not `NIL`.
 
-See [Permission Rules](#permission-rules) for an explanation of the proper syntax of the permissions.
+See §2.5 for an explanation of the proper syntax of the permissions.
 
 #### 5.4 Channel Interaction
 A user can interact with a channel in several ways. 
