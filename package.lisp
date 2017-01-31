@@ -123,4 +123,5 @@
   ;; wire.lisp
   (:export
    #:to-wire
+   #:check-update-options
    #:from-wire))

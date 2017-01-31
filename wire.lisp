@@ -20,6 +20,19 @@
   ;; (terpri stream)
   (force-output stream))
 
+(defun check-update-options (sexpr)
+  (let (id-found clock-found)
+    (loop for (key val) on (rest sexpr) by #'cddr
+          do (unless (typep key 'keyword)
+               (error 'malformed-wire-object :update sexpr))
+             (case key
+               (:id (setf id-found T))
+               (:clock (setf clock-found T))))
+    (unless id-found
+      (error 'missing-id :update sexpr))
+    (unless clock-found
+      (error 'missing-clock :update sexpr))))
+
 (defun from-wire (stream)
   (let ((sexpr (read-sexpr stream)))
     (typecase sexpr
@@ -29,17 +42,7 @@
        (let ((class (find-class (first sexpr) NIL)))
          (unless class (error 'unknown-wire-object :update sexpr))
          (cond ((c2mop:subclassp class (find-class 'update))
-                (let (id-found clock-found)
-                  (loop for (key val) on (rest sexpr) by #'cddr
-                        do (unless (typep key 'keyword)
-                             (error 'malformed-wire-object :update sexpr))
-                           (case key
-                             (:id (setf id-found T))
-                             (:clock (setf clock-found T))))
-                  (unless id-found
-                    (error 'missing-id :update sexpr))
-                  (unless clock-found
-                    (error 'missing-clock :update sexpr)))
+                (check-update-options sexpr)
                 (apply #'make-instance (first sexpr) :allow-other-keys T (rest sexpr)))
                ((c2mop:subclassp class (find-class 'wire-object))
                 (apply #'make-instance (first sexpr) :allow-other-keys T (rest sexpr)))

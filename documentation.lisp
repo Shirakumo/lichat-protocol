@@ -874,6 +874,22 @@ The output is forced once written fully.
 See PRINT-SEXPR
 See FORCE-OUTPUT")
 
+  (function check-update-options
+    "Checks the given sexpr for conformity to use as initargs for an update.
+
+The items after the first symbol in the list are checked
+as follows: they must be balanced pairs of KEYWORD to
+atom. If this is not the case, an error of type
+MALFORMED-WIRE-OBJECT is signalled. If no key :ID is
+found, an error of type MISSING-ID is signalled. If no
+key :CLOCK is found, an error of type MISSING-CLOCK is
+signalled.
+
+See FROM-WIRE
+See MISSING-ID
+See MISSING-CLOCK
+See MALFORMED-WIRE-OBJECT")
+
   (function from-wire
     "Read a wire object from the stream.
 
@@ -886,18 +902,13 @@ If the symbol does not designate a class, or designates
 a class that is not a subclass of WIRE-OBJECT, an error
 of type UNKNOWN-WIRE-OBJECT is signalled. If the class
 is a subclass of UPDATE, the rest of the items in the
-list are checked as follows: they must be balanced
-pairs of KEYWORD to atom. If this is not the case, an
-error of type MALFORMED-WIRE-OBJECT is signalled. If
-no key :ID is found, an error of type MISSING-ID is
-signalled. If no key :CLOCK is found, an error of type
-MISSING-CLOCK is signalled. Finally MAKE-INSTANCE is
-called with the full expression as arguments. If the
-class is a subclass of wire-object, MAKE-INSTANCE is
-called with the full expression as arguments immediately.
+list are checked by CHECK-UPDATE-OPTIONS. Finally
+MAKE-INSTANCE is called with the full expression as
+arguments. If the class is a subclass of wire-object,
+MAKE-INSTANCE is called with the full expression as
+arguments immediately.
 
 See READ-SEXPR
+See MALFORMED-WIRE-OBJECT
 See UNKNOWN-WIRE-OBJECT
-See MISSING-ID
-See MISSING-CLOCK
-See UNKNOWN-WIRE-OBJECT"))
+See CHECK-UPDATE-OPTIONS"))
