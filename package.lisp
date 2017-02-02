@@ -26,7 +26,8 @@
    #:unknown-wire-object
    #:incompatible-value-type-for-slot)
   ;; printer.lisp
-  (:export)
+  (:export
+   #:print-sexpr)
   ;; protocol.lisp
   (:export
    #:*default-profile-lifetime*
@@ -117,7 +118,8 @@
    #:too-many-updates)
   ;; reader.lisp
   (:export
-   #:whitespace-p)
+   #:whitespace-p
+   #:read-sexpr)
   ;; typed-slot-class.lisp
   (:export)
   ;; wire.lisp
