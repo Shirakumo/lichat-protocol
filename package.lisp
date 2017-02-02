@@ -24,6 +24,7 @@
    #:missing-id
    #:missing-clock
    #:unknown-wire-object
+   #:malformed-wire-object
    #:incompatible-value-type-for-slot)
   ;; printer.lisp
   (:export
