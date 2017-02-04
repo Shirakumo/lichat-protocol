@@ -11,9 +11,9 @@
     (wire-object
      (print-sexpr `(,(class-name (class-of wireable))
                      ,@(loop for slot in (c2mop:class-slots (class-of wireable))
-                             for name = (first (c2mop:slot-definition-initargs slot))
-                             when name collect name
-                             when name collect (slot-value wireable (c2mop:slot-definition-name slot))))
+                             for initarg = (first (c2mop:slot-definition-initargs slot))
+                             when initarg collect initarg
+                             when initarg collect (slot-value wireable (c2mop:slot-definition-name slot))))
                   stream))
     (wireable
      (print-sexpr wireable stream)))
