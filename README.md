@@ -7,10 +7,10 @@ The wire format is based on UTF-8 character streams on which objects are seriali
 
 ```BNF
 WIREABLE ::= OBJECT | STRING | SYMBOL | NUMBER
-OBJECT   ::= '(' WHITE* SYMBOL (WHITE* KEYWORD WHITE* EXPR)* WHITE* ')'
+OBJECT   ::= '(' WHITE* SYMBOL (WHITE+ KEYWORD WHITE+ EXPR)* WHITE* ')'
 EXPR     ::= STRING | LIST | SYMBOL | NUMBER
 STRING   ::= '"' ('\' '"' | !'"')* '"'
-LIST     ::= '(' WHITE* EXPR* WHITE* ')'
+LIST     ::= '(' WHITE* (EXPR (WHITE+ EXPR)*)? WHITE* ')'
 SYMBOL   ::= KEYWORD | '#' ':' NAME | NAME ':' NAME
 KEYWORD  ::= ':' NAME
 NUMBER   ::= '0..9'+ ( '.' '0..9'*)? | '.' '0..9'*
