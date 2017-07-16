@@ -182,8 +182,22 @@
 (define-protocol-class channel-update (update)
   ((channel :initarg :channel :accessor channel :slot-type channelname)))
 
+(defmethod print-object ((update channel-update) stream)
+  (print-unreadable-object (update stream :type T)
+    (format stream "~s ~a ~s ~a ~s ~a"
+            :from (maybe-sval update 'from)
+            :channel (maybe-sval update 'channel)
+            :id (maybe-sval update 'id))))
+
 (define-protocol-class target-update (update)
   ((target :initarg :target :accessor target :slot-type username)))
+
+(defmethod print-object ((update target-update) stream)
+  (print-unreadable-object (update stream :type T)
+    (format stream "~s ~a ~s ~a ~s ~a"
+            :from (maybe-sval update 'from)
+            :target (maybe-sval update 'channel)
+            :id (maybe-sval update 'id))))
 
 (define-protocol-class text-update (update)
   ((text :initarg :text :accessor text :slot-type string)))
