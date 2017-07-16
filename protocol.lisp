@@ -125,6 +125,14 @@
   (:default-initargs
    :user NIL))
 
+(defmethod print-object ((connection connection) stream)
+  (print-unreadable-object (connection stream :type T)
+    (if (user connection)
+        (format stream "~a/~d"
+                (name (user connection))
+                (position connection (connections (user connection))))
+        (format stream "[unassociated]"))))
+
 (define-protocol-class channel (named-object server-object)
   ((name :slot-type channelname)
    (permissions :initarg :permissions :accessor permissions :slot-type list)
