@@ -17,7 +17,7 @@
                   stream))
     (wireable
      (print-sexpr wireable stream)))
-  ;; (terpri stream)
+  (write-char #\Nul stream)
   (force-output stream))
 
 (defun check-update-options (sexpr)
@@ -35,18 +35,21 @@
 
 (defun from-wire (stream)
   (let ((sexpr (read-sexpr stream)))
-    (typecase sexpr
-      (cons
-       (unless (typep (first sexpr) 'symbol)
-         (error 'malformed-wire-object :update sexpr))
-       (let ((class (find-class (first sexpr) NIL)))
-         (unless class (error 'unknown-wire-object :update sexpr))
-         (cond ((c2mop:subclassp class (find-class 'update))
-                (check-update-options sexpr)
-                (apply #'make-instance (first sexpr) :allow-other-keys T (rest sexpr)))
-               ((c2mop:subclassp class (find-class 'wire-object))
-                (apply #'make-instance (first sexpr) :allow-other-keys T (rest sexpr)))
-               (T
-                (error 'unknown-wire-object :update sexpr)))))
-      (T
-       sexpr))))
+    (prog1
+        (typecase sexpr
+          (cons
+           (unless (typep (first sexpr) 'symbol)
+             (error 'malformed-wire-object :update sexpr))
+           (let ((class (find-class (first sexpr) NIL)))
+             (unless class (error 'unknown-wire-object :update sexpr))
+             (cond ((c2mop:subclassp class (find-class 'update))
+                    (check-update-options sexpr)
+                    (apply #'make-instance (first sexpr) :allow-other-keys T (rest sexpr)))
+                   ((c2mop:subclassp class (find-class 'wire-object))
+                    (apply #'make-instance (first sexpr) :allow-other-keys T (rest sexpr)))
+                   (T
+                    (error 'unknown-wire-object :update sexpr)))))
+          (T
+           sexpr))
+      (when (char= #\Nul (peek-char stream))
+        (read-char stream)))))
