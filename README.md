@@ -9,12 +9,12 @@ The wire format is based on UTF-8 character streams on which objects are seriali
 WIREABLE ::= OBJECT | STRING | SYMBOL | NUMBER
 OBJECT   ::= '(' WHITE* SYMBOL (WHITE+ KEYWORD WHITE+ EXPR)* WHITE* ')'
 EXPR     ::= STRING | LIST | SYMBOL | NUMBER
-STRING   ::= '"' ('\' '"' | !'"')* '"'
+STRING   ::= '"' ('\' . | !'"')* '"'
 LIST     ::= '(' WHITE* (EXPR (WHITE+ EXPR)*)? WHITE* ')'
 SYMBOL   ::= KEYWORD | '#' ':' NAME | NAME ':' NAME
 KEYWORD  ::= ':' NAME
 NUMBER   ::= '0..9'+ ( '.' '0..9'*)? | '.' '0..9'*
-NAME     ::= (('\' TERMINAL) | !TERMINAL)+
+NAME     ::= (('\' .) | !TERMINAL)+
 TERMINAL ::= ('0..9' | ':' | ' ' | '"' | '.' | '(' | ')')
 WHITE    ::= U+0009 | U+000A | U+000B | U+000C | U+000D | U+0020
 ```
