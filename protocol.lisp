@@ -196,7 +196,7 @@
   (print-unreadable-object (update stream :type T)
     (format stream "~s ~a ~s ~a ~s ~a"
             :from (maybe-sval update 'from)
-            :target (maybe-sval update 'channel)
+            :target (maybe-sval update 'target)
             :id (maybe-sval update 'id))))
 
 (define-protocol-class text-update (update)
