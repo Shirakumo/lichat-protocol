@@ -36,6 +36,7 @@
   (with-output-to-string (out)
     (loop for char = (read-char stream)
           do (case char
+               (#\Nul (error 'stray-null-found))
                (#\\ (write-char (read-char stream) out))
                (#\" (return))
                (T   (write-char char out))))))
@@ -70,7 +71,7 @@
     (loop for char = (read-char stream NIL)
           do (case char
                (#\\ (write-char (read-char stream) out))
-               ((#\" #\( #\) #\: #\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\. #\ ) (unread-char char stream) (return))
+               ((#\" #\( #\) #\: #\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\. #\  #\Nul) (unread-char char stream) (return))
                ((NIL) (return))
                (T (write-char (char-upcase char) out))))))
 
@@ -93,6 +94,7 @@
                                     (declare (ignore err))
                                     (error 'incomplete-token))))
                   (case char
+                    (#\Nul (error 'stray-null-found))
                     (#\( (read-sexpr-list stream))
                     (#\) (error 'incomplete-token))
                     (#\" (read-sexpr-string stream))

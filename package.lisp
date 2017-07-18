@@ -18,6 +18,7 @@
    #:null-in-symbol-designator
    #:symbol-designator
    #:reader-condition
+   #:stray-null-found
    #:incomplete-token
    #:unknown-symbol
    #:symbol-designator

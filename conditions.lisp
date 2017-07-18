@@ -28,6 +28,10 @@
 (define-condition reader-condition (wire-condition)
   ())
 
+(define-condition stray-null-found (error reader-condition)
+  ()
+  (:report "Unable to read complete update-- a stray null character was found."))
+
 (define-condition incomplete-token (error reader-condition)
   ()
   (:report "Unable to read complete token-- end of stream reached prematurely."))

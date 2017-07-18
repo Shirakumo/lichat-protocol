@@ -58,6 +58,11 @@ See UNKNOWN-SYMBOL")
 See INCOMPLETE-TOKEN
 See UNKNOWN-SYMBOL")
 
+  (type stray-null-found
+    "Condition signalled when a null character was found in the middle of an update.
+
+See READER-CONDITION")
+
   (type incomplete-token
     "Condition signalled when a token is not complete on the wire and thus can't be read fully.")
 
