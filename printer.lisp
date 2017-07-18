@@ -34,7 +34,7 @@
         do (when (char= char (code-char 0))
              (error 'null-in-symbol-designator :symbol-designator (cons (package-name (symbol-package symbol))
                                                                         (symbol-name symbol))))
-           (when (find char "\"():0123456789. #")
+           (when (find char "\\\"():0123456789. #")
              (write-char #\\ stream))
            (write-char (char-downcase char) stream)))
 
