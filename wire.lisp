@@ -51,5 +51,5 @@
                     (error 'unknown-wire-object :update sexpr)))))
           (T
            sexpr))
-      (when (eql #\Nul (peek-char NIL stream NIL))
-        (read-char stream)))))
+      (loop for char = (read-char stream NIL)
+            until (or (not char) (char= #\Nul char))))))

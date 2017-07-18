@@ -79,7 +79,7 @@ The client and the server communicate through `update` objects over a connection
 When an update is sent to a channel, it is distributed to all the users currently in the channel. When an update is sent to a user, it is distributed to all the connections of the user. When an update is sent to a connection, it is serialised to the wire according to the above wire format specification. The actual underlying mechanism that transfers the characters of the wire format to the remote host is implementation-dependant.
 
 #### 3.1 Null Termination of Updates
-In the case where the communication between the server and client happens over a continuous stream, individual updates may be segmented from each other by sending a null character (`U+0000`) after each complete update. This character can then also be used by either party to recover in case of a malformed update.
+Following each update that is put on the wire has to be a single null character (`U+0000`). This character can be used to distinguish individual updates on the wire and may serve as a marker to attempt and stabilise the stream in case of malformed updates or other problems that might occur on the lower level.
 
 ### 4. Connection
 #### 4.1 Establishment
