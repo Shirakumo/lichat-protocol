@@ -18,6 +18,7 @@
   (write-char #\" stream)
   (unwind-protect
        (loop for char across string
+             unless (char= char (code-char 0))
              do (when (or (char= char #\") (char= char #\\))
                   (write-char #\\ stream))
                 (write-char char stream))
@@ -28,9 +29,12 @@
     (integer (format stream "~d" number))
     (float   (format stream "~f" number))))
 
-(defun print-sexpr-token (token stream)
+(defun print-sexpr-token (token stream symbol)
   (loop for char across token
-        do (when (find char "\"():0123456789. #")
+        do (when (char= char (code-char 0))
+             (error 'null-in-symbol-designator :symbol-designator (cons (package-name (symbol-package symbol))
+                                                                        (symbol-name symbol))))
+           (when (find char "\"():0123456789. #")
              (write-char #\\ stream))
            (write-char (char-downcase char) stream)))
 
@@ -43,9 +47,9 @@
      (write-char #\# stream)
      (write-char #\: stream))
     (T
-     (print-sexpr-token (package-name (symbol-package sexpr)) stream)
+     (print-sexpr-token (package-name (symbol-package sexpr)) stream sexpr)
      (write-char #\: stream)))
-  (print-sexpr-token (symbol-name sexpr) stream))
+  (print-sexpr-token (symbol-name sexpr) stream sexpr))
 
 (defun print-sexpr (sexpr stream)
   (typecase sexpr

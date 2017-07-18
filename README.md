@@ -9,21 +9,28 @@ The wire format is based on UTF-8 character streams on which objects are seriali
 WIREABLE ::= OBJECT | STRING | SYMBOL | NUMBER
 OBJECT   ::= '(' WHITE* SYMBOL (WHITE+ KEYWORD WHITE+ EXPR)* WHITE* ')'
 EXPR     ::= STRING | LIST | SYMBOL | NUMBER
-STRING   ::= '"' ('\' . | !'"')* '"'
+STRING   ::= '"' ('\' ANY | !('"' | NULL))* '"'
 LIST     ::= '(' WHITE* (EXPR (WHITE+ EXPR)*)? WHITE* ')'
 SYMBOL   ::= KEYWORD | '#' ':' NAME | NAME ':' NAME
 KEYWORD  ::= ':' NAME
 NUMBER   ::= '0..9'+ ( '.' '0..9'*)? | '.' '0..9'*
-NAME     ::= (('\' .) | !TERMINAL)+
+NAME     ::= (('\' ANY) | !(TERMINAL | NULL))+
 TERMINAL ::= ('0..9' | ':' | ' ' | '"' | '.' | '(' | ')')
 WHITE    ::= U+0009 | U+000A | U+000B | U+000C | U+000D | U+0020
+NULL     ::= U+0000
+ANY      ::= !NULL
 ```
 
+See `to-wire`, `from-wire`.
+
+#### 1.1 Symbols
 Special care must be taken when reading and printing symbols. Symbols that come from the `lichat-protocol` package must be printed without the package name prefix. Symbols from the `keyword` package must be printed by their name only prefixed by a `:`. Symbols without a package must be printed by their name only and prefixed by a `#:`. Every other symbol must be prefixed by the symbol's package's name followed by a `:`. When a symbol is read, it is checked whether it exists in the corresponding package laid out by the previous rules. If it does not exist, the expression is not valid and an error must be generated, but only after the expression has been read to completion.
 
+#### 1.2 Objects
 Only Common Lisp objects of type `wireable` can be serialised to the wire format. Special care must also be taken when `wire-object`s are read from the wire. An error must be generated if the object is malformed by either a non-symbol in the first place of its list, imbalanced key/value pairs in the tail, or non-keywords in the key position. An error must also be generated if the symbol at the first position does not name a class that is a subclass of `wire-object`. If it is a subclass of `update`, the keys (and values) named `:id` and `:clock` must also be present, lest an error be generated.
 
-See `to-wire`, `from-wire`.
+#### 1.3 Null Characters
+Null characters (`U+0000`) must not appear anywhere within a wireable. If a string were to contain null characters, they must be filtered out. If a symbol were to contain null characters, the message may not be put to the wire.
 
 ### 2. Server Objects
 The server must keep track of a number of objects that are related to the current state of the chat system. The client may also keep track of some of these objects for its own convenience.
@@ -70,6 +77,9 @@ Where `type` is the name of an update class, and `username` is the name of a use
 The client and the server communicate through `update` objects over a connection. Each such object that is issued from the client must contain a unique `id`. This is important as the ID is reused by the server in order to communicate replies. The client can then compare the ID of the incoming updates to find the response to an earlier request, as responses may be reordered or delayed. The server does not check the ID in any way-- uniqueness and avoidance of clashing is the responsibility of the client. Each update must also contain a `clock` slot that specifies the time of sending. This is used to calculate latency and potential connection problems.
 
 When an update is sent to a channel, it is distributed to all the users currently in the channel. When an update is sent to a user, it is distributed to all the connections of the user. When an update is sent to a connection, it is serialised to the wire according to the above wire format specification. The actual underlying mechanism that transfers the characters of the wire format to the remote host is implementation-dependant.
+
+#### 3.1 Null Termination of Updates
+In the case where the communication between the server and client happens over a continuous stream, individual updates may be segmented from each other by sending a null character (`U+0000`) after each complete update. This character can then also be used by either party to recover in case of a malformed update.
 
 ### 4. Connection
 #### 4.1 Establishment

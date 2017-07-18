@@ -15,6 +15,8 @@
    #:printer-condition
    #:unprintable-object
    #:object
+   #:null-in-symbol-designator
+   #:symbol-designator
    #:reader-condition
    #:incomplete-token
    #:unknown-symbol

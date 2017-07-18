@@ -20,6 +20,11 @@
   (:report (lambda (c s) (format s "The object~%  ~s~%cannot be printed to the lichat wire format."
                                  (object c)))))
 
+(define-condition null-in-symbol-designator (error printer-condition)
+  ((symbol-designator :initarg :symbol-designator :reader symbol-designator))
+  (:report (lambda (c s) (format s "The symbol ~a::~a was to be put on the wire, but contains NULL characters."
+                                 (car (symbol-designator c)) (cdr (symbol-designator c))))))
+
 (define-condition reader-condition (wire-condition)
   ())
 

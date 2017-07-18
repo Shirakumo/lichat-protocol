@@ -39,6 +39,19 @@ See OBJECT")
 See UNPRINTABLE-OBJECT
 See INCOMPATIBLE-VALUE-TYPE-FOR-SLOT")
 
+  (type null-in-symbol-designator
+    "Condition signalled when a symbol is attempted to be put to the wire whose designator contains NULL characters.
+
+See SYMBOL-DESIGNATOR")
+
+  (function symbol-designator
+    "A symbol designator.
+
+Returns a CONS of two strings for the package- and symbol-name respectively.
+
+See NULL-IN-SYMBOL-DESIGNATOR
+See UNKNOWN-SYMBOL")
+
   (type reader-condition
     "Superclass for all conditions relating to reading from the wire.
 
@@ -52,13 +65,6 @@ See UNKNOWN-SYMBOL")
     "Condition signalled when an unknown symbol is found on the wire.
 
 See SYMBOL-DESIGNATOR")
-
-  (function symbol-designator
-    "The symbol designator for the unknown symbol that was found on the wire.
-
-Returns a CONS of two strings for the package- and symbol-name respectively.
-
-See UNKNOWN-SYMBOL")
 
   (type missing-update-argument
     "Superclass for all conditions relating to missing required arguments in updates.
