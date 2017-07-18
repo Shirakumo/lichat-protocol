@@ -18,7 +18,7 @@
   (write-char #\" stream)
   (unwind-protect
        (loop for char across string
-             do (when (char= char #\")
+             do (when (or (char= char #\") (char= char #\\))
                   (write-char #\\ stream))
                 (write-char char stream))
     (write-char #\" stream)))
