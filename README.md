@@ -82,7 +82,7 @@ When an update is sent to a channel, it is distributed to all the users currentl
 Following each update that is put on the wire has to be a single null character (`U+0000`). This character can be used to distinguish individual updates on the wire and may serve as a marker to attempt and stabilise the stream in case of malformed updates or other problems that might occur on the lower level.
 
 ### 4. Connection
-#### 4.1 Establishment
+#### 4.1 Connection Establishment
 After the connection between a client and a server has been established through some implementation-dependant means, the client must send a `connect` update. The update will attempt to register the user on the server, as follows:
 
 1. If the server cannot sustain more connections, a `too-many-connections` update is returned and the connection is closed.

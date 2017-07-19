@@ -209,10 +209,18 @@ Should equal to one standard month (30 days).")
 
 Should be the union of REAL STRING CONS SYMBOL WIRE-OBJECT")
 
+  (function valid-name-char-p
+    "Returns true if the given character is an allowed character in names.
+
+This is according to §2.2.1 and §2.4.4.")
+
   (function username-p
     "Returns true if the given name is a valid name for users.
 
-That is to say, the name must be a string in [1,32] of length.")
+That is to say, the name must be a string in [1,32] of length
+and each character must be in the allowed unicode regions.
+
+See VALID-NAME-CHAR-P")
 
   (type username
     "Type that is satisfied for all username strings.
@@ -670,7 +678,13 @@ See UPDATE-FAILURE")
   (type incompatible-version
     "Update in response to a connection attempt with an incompatible protocol version.
 
+See COMPATIBLE-VERSIONS
 See UPDATE-FAILURE")
+
+  (function compatible-versions
+    "Accessor to the list of version strings that this server is compatible with.
+
+See INCOMPATIBLE-VERSION")
 
   (type invalid-password
     "Update in response to a connection attempt with an invalid password for the profile.
@@ -820,7 +834,7 @@ See READ-SEXPR-SYMBOL"))
   (variable *unbound-value*
     "Placeholder value for unbound values.")
 
-  (function check-compatible-slot-values
+  (function check-compatible-slot-value
     "Checks whether the given value is suitable for the given object's slot.
 
 If it is not, an error of type INCOMPATIBLE-VALUE-TYPE-FOR-SLOT
