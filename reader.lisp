@@ -28,7 +28,7 @@
 
 (defun read-sexpr-list (stream)
   (prog1 (loop do (skip-whitespace stream)
-               until (eql #\) (peek-char T stream))
+               until (eql #\) (peek-char NIL stream))
                collect (read-sexpr stream))
     (read-char stream)))
 
@@ -86,7 +86,6 @@
            (safe-find-symbol token #.*package*)))))
 
 (defun read-sexpr (stream)
-  (skip-whitespace stream)
   (let* ((char (read-char stream))
          (*errors* NIL)
          (sexpr (handler-bind
