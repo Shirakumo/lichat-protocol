@@ -33,8 +33,10 @@
     (unless clock-found
       (error 'missing-clock :update sexpr))))
 
-(defun from-wire (stream)
-  (let ((sexpr (read-sexpr stream)))
+(defun from-wire (stream &optional limit)
+  (let* ((*read-counter* 0)
+         (*read-limit* limit)
+         (sexpr (read-sexpr stream)))
     (prog1
         (typecase sexpr
           (cons

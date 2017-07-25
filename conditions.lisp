@@ -41,6 +41,10 @@
   (:report (lambda (c s) (format s "The symbol ~a::~a was found on the wire, but is not interned locally."
                                  (car (symbol-designator c)) (cdr (symbol-designator c))))))
 
+(define-condition read-limit-hit (error reader-condition)
+  ()
+  (:report "Unable to read update fully, read limit has been hit."))
+
 (define-condition missing-update-argument (wire-condition)
   ((update :initarg :update :reader update))
   (:report (lambda (c s) (format s "The update did not include all necessary arguments:~%  ~s"
