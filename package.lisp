@@ -22,6 +22,7 @@
    #:incomplete-token
    #:unknown-symbol
    #:symbol-designator
+   #:read-limit-hit
    #:missing-update-argument
    #:update
    #:missing-id
@@ -77,6 +78,7 @@
    #:connect
    #:password
    #:version
+   #:extensions
    #:disconnect
    #:register
    #:channel-update
@@ -99,8 +101,14 @@
    #:user-info
    #:registered
    #:connections
+   #:backfill
+   #:data
+   #:content-type
+   #:filename
+   #:payload
    #:failure
    #:malformed-update
+   #:update-too-long
    #:connection-unstable
    #:too-many-connections
    #:update-failure
@@ -119,7 +127,9 @@
    #:insufficient-permissions
    #:invalid-permissions
    #:no-such-user
-   #:too-many-updates)
+   #:too-many-updates
+   #:bad-content-type
+   #:allowed-content-types)
   ;; reader.lisp
   (:export
    #:whitespace-p

@@ -12,12 +12,12 @@
 (defvar *read-limit* NIL)
 (defvar *read-counter*)
 
-(defun lread (stream)
+(defun lread (stream &optional eof)
   (when *read-limit*
     (when (<= *read-limit* *read-counter*)
       (error 'read-limit-hit))
     (incf *read-counter*))
-  (read-char stream))
+  (read-char stream (not eof) eof))
 
 (defun lpeek (stream)
   (when *read-limit*
@@ -97,7 +97,7 @@
 
 (defun read-sexpr-symbol (stream)
   (let ((token (read-sexpr-token stream)))
-    (cond ((eql #\: (lpeek stream NIL))
+    (cond ((eql #\: (lpeek stream))
            (lread stream)
            (if (string= token "#")
                (make-symbol (read-sexpr-token stream))

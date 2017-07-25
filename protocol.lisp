@@ -19,7 +19,9 @@
     (pull T)
     (message T)
     (users T)
-    (channels T)))
+    (channels T)
+    (backfill T)
+    (data T)))
 
 (defparameter *default-anonymous-channel-permissions*
   '((permissions)
@@ -29,7 +31,9 @@
     (pull T)
     (message T)
     (users)
-    (channels)))
+    (channels)
+    (backfill T)
+    (data T)))
 
 (defparameter *default-primary-channel-permissions*
   '((permissions :registrant)
@@ -40,7 +44,9 @@
     (pull)
     (message :registrant)
     (users T)
-    (channels T)))
+    (channels T)
+    (backfill :registrant)
+    (data :registrant)))
 
 (deftype wireable ()
   `(or real string cons symbol wire-object))
@@ -168,7 +174,8 @@
 
 (define-protocol-class connect (update)
   ((password :initarg :password :accessor password :slot-type (or null password))
-   (version :initarg :version :accessor version :slot-type string))
+   (version :initarg :version :accessor version :slot-type string)
+   (extensions :initarg :extensions :accessor extensions :slot-type list))
   (:default-initargs
    :password NIL
    :version (protocol-version)))
@@ -244,6 +251,15 @@
    (connections :initarg :connections :accessor connections :slot-type (integer 1)))
   (:default-initargs :registered NIL :connections 1))
 
+(define-protocol-class backfill (channel-update)
+  ())
+
+(define-protocol-class data (channel-update)
+  ((content-type :initarg :content-type :accessor content-type :slot-type string)
+   (filename :initarg :filename :accessor filename :slot-type (or null string))
+   (payload :initarg :payload :accessor payload :slot-type string))
+  (:default-initargs :file-name NIL))
+
 ;; Errors
 (define-protocol-class failure (text-update)
   ())
@@ -251,6 +267,10 @@
 (define-protocol-class malformed-update (failure)
   ()
   (:default-initargs :text "Update was malformed and could not be parsed."))
+
+(define-protocol-class update-too-long (failure)
+  ()
+  (:default-initargs :text "The update was too long and has been dropped."))
 
 (define-protocol-class connection-unstable (failure)
   ()
@@ -328,3 +348,8 @@
 (define-protocol-class too-many-updates (update-failure)
   ()
   (:default-initargs :text "You have been sending too many updates and have been throttled."))
+
+(define-protocol-class bad-content-type (update-failure)
+  ((allowed-content-types :initarg :allowed-content-types :accessor allowed-content-types :slot-type list))
+  (:default-initargs :text "The supplied content type for the data update is not accepted by this server."
+                     :allowed-content-types ()))

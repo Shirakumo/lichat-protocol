@@ -217,6 +217,34 @@ A server or client may provide extensions to the protocol in the following manne
 * **Additional Update Types** -- If such an update is sent to a client that does not recognise it, it should be ignored. If such an update is sent to a server that does not recognise it, the server will respond with an `invalid-update`.
 * **Additional Update Fields** -- A client or server may extend the existing update classes with additional, optional fields to provide further information or other kinds of behaviour. The server or client is not allowed to introduce additional required fields. When an update with unknown initargs is received, the unknown initargs are to be ignored.
 
+Each extension to the protocol should receive a unique name of the form `producer-name` where `producer` is an identifier for who wrote up the extension's protocol, and `name` should be a name for the extension itself. For each extension that a server and client support, they must include the unique name of it as a string in the `connect` update's `extensions` list.
+
+### 7. Protocol Extensions
+The extensions outlined in this section are not mandatory and a server or client may choose not to implement them.
+
+#### 7.1 Backfill (shirakumo-backfill)
+A new update type called `backfill` is introduced, which is a `channel-update`. If the server receives such an update from a connection, it reacts as follows:
+
+1. If the user is not in the named channel, a `not-in-channel` update is sent back and the request is dropped.
+1. Following this, updates are sent back to the connection the update came from. These updates should include all updates that were distributed to users in the channel, spanning from now to an arbitrary point in time that is at most when the user of this connection last joined the channel. The fields of the updates must be the equal to the first time the update was sent out.
+
+The purpose of this extension is to allow users to catch up with the contents of a channel should they initiate a new connection which does not currently have access to all the past updates of the channel. In order to facilitate this, the server is forced to keep copies of the updates. The server is allowed to only keep updates for a certain duration, or only a certain number of total updates. In order to avoid spying, the server must not distribute updates that the user did not already receive previously through another connection. The server does not have to make any guarantee about the order in which the updates are sent back to the connection. The client on the other side is responsible for ordering them as appropriate according to the clock.
+
+#### 7.2 Data (shirakumo-data)
+A new update type called `data` is introduced, which is a `channel-update`. Additionally, a new `failure` type called `bad-content-type` is introduced, which is an `update-failure`. If the server receives a `data` update from a connection, it reacts as follows:
+
+1. If the user is not in the named channel, a `not-in-channel` update is sent back and the request is dropped.
+1. If the update's `content-type` is not accepted by the server, a `bad-content-type` update is sent back and the request is dropped.
+1. The user's `data` update is distributed to all users in the channel.
+
+The `data` update contains three slots, with the following intentions:
+
+* `content-type` A string representing the [content type](https://en.wikipedia.org/wiki/Media_type) of the payload data contained in the update.
+* `filename` A string representing an arbitrary name given to the payload data.
+* `payload` A base-64 encoded string of binary data payload.
+
+The purpose of this extension is to allow users to send binary data over channels. Particularly, the intention is to allow embedding of images, audio, video, and other media.
+
 ## See Also
 
 * [lichat-serverlib](https://shirakumo.github.io/lichat-serverlib) An agnostic implementation of the server-side protocol.
