@@ -178,7 +178,8 @@
    (extensions :initarg :extensions :accessor extensions :slot-type list))
   (:default-initargs
    :password NIL
-   :version (protocol-version)))
+   :version (protocol-version)
+   :extensions ()))
 
 (define-protocol-class disconnect (update)
   ())
