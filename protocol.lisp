@@ -108,7 +108,7 @@
   ((name :initarg :name :accessor name)))
 
 (defmethod print-object ((object named-object) stream)
-  (print-unreadable-object (object stream :type T)
+  (print-unreadable-object (object stream :type T :identity T)
     (format stream "~a" (maybe-sval object 'name))))
 
 (define-protocol-class profile (named-object server-object)
