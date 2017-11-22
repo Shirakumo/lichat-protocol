@@ -106,6 +106,9 @@
    #:content-type
    #:filename
    #:payload
+   #:emote-sheet
+   #:sheet
+   #:emotes
    #:failure
    #:malformed-update
    #:update-too-long

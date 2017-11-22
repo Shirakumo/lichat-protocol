@@ -261,6 +261,11 @@
    (payload :initarg :payload :accessor payload :slot-type string))
   (:default-initargs :file-name NIL))
 
+(define-protocol-class emote-sheet (update)
+  ((sheet :initarg :sheet :accessor sheet :slot-type (or null string))
+   (emotes :initarg :emotes :accessor emotes :slot-type list))
+  (:default-initargs :sheet NIL :emotes NIL))
+
 ;; Errors
 (define-protocol-class failure (text-update)
   ())

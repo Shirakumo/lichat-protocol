@@ -245,6 +245,25 @@ The `data` update contains three slots, with the following intentions:
 
 The purpose of this extension is to allow users to send binary data over channels. Particularly, the intention is to allow embedding of images, audio, video, and other media.
 
+#### 7.3 Emotes (shirakumo-emotes)
+A new update type called `emote-sheet` is introduced. If the server receives an `emotes` update from a connection, it reacts as follows:
+
+1. The server sends back an `emote-sheet` update with the `sheet` and `emotes` list set as configured by the server administrator.
+
+The `emote-sheet` update contains two additional slots, with the following intentions:
+
+* `sheet` A base-64 encoded PNG image representing a sprite sheet.
+* `emotes` A list of lists, where each sublist contains five items:
+  * `name` A string representing the name of the emote being described.
+  * `x` The horizontal offset into the sprite sheet image representing the left edge of the emote.
+  * `y` The vertical offset into the sprite sheet image representing the bottom edge of the emote.
+  * `w` The width of the emote in the sprite sheet image.
+  * `h` The height of the emote in the sprite sheet image.
+
+When the client sees a `message` with a text matching the regex `:([^:]+):` and the group matched by the regex is the name of an emote from the known list of emotes sent back by the server, then the entire match of the regex should be represented to the user by an image of the emote as designated by the associated `x`, `y`, `w`, and `h` properties into the sprite sheet.
+
+The purpose of this extension is to allow the server manager to configure emote images for the users to use, similar in functionality to what is often found on forums and other platforms.
+
 ## See Also
 
 * [lichat-serverlib](https://shirakumo.github.io/lichat-serverlib) An agnostic implementation of the server-side protocol.
