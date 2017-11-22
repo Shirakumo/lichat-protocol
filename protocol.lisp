@@ -267,7 +267,7 @@
   ((names :initarg :names :accessor names :slot-type list))
   (:default-initargs :names NIL))
 
-(define-protocol-class emote (channel-update)
+(define-protocol-class emote (update)
   ((content-type :initarg :content-type :accessor content-type :slot-type string)
    (name :initarg :name :accessor name :slot-type string)
    (payload :initarg :payload :accessor payload :slot-type string)))
