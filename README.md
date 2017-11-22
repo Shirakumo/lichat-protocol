@@ -246,17 +246,26 @@ The `data` update contains three slots, with the following intentions:
 The purpose of this extension is to allow users to send binary data over channels. Particularly, the intention is to allow embedding of images, audio, video, and other media.
 
 #### 7.3 Emotes (shirakumo-emotes)
-This extension requires the `shirakumo-data` extension. A new update type called `emotes` is introduced. If the server receives an `emotes` update from a connection, it reacts as follows:
+Two new update types called `emotes` and `emote` are introduced. If the server receives an `emotes` update from a connection, it reacts as follows:
 
 1. The server computes a set difference between the known emote names, and the names listed in the event's `names` slot. Emote names are case-insensitive.
-1. The server sends back an `emotes` update with the `names` slot set to the names in the set.
-1. For each emote in the calculated set, the server sends back a `data` update, where the `filename` is set to the emote's name, and the `data` is set to the encoded image representing the emote. The `content-type` must match that of the image.
+1. For each emote in the calculated set, the server sends back an `emote` update, where the `name` is set to the emote's name, and the `payload` is set to the base-64 encoded image representing the emote. The `content-type` must be set accordingly.
+
+When the client receives an `emote` update from the server, it reacts as follows:
+
+1. The `payload` and `content-type` are associated with the `name` and persisted on the client. When the client sends an `emotes` event it to the server it should include the name of this emote in the `names` list.
 
 The `emotes` update contains one slot, with the following intentions:
 
-* `emotes` If coming from a client, this contains a list of strings denoting the names of emotes the client knows about. If coming from a server, this contains a list of strings denoting names of emotes the server will send back in the following `data` updates.
+* `names` This contains a list of strings denoting the names of emotes the client knows about.
 
-When the client sees a `message` with a text matching the regex `:([^:]+):` and the group matched by the regex is the name of an emote from the known list of emotes sent back by the server, then the entire match of the regex should be represented to the user by an image of the emote as designated.
+The `emote` update contains three slots, with the following intentions:
+
+* `content-type` A string representing the [content type](https://en.wikipedia.org/wiki/Media_type) of the emote image contained in the update.
+* `name` A string representing the name of the emote.
+* `payload` A base-64 encoded string of binary data payload.
+
+When the client sees a `message` update, every match of the regex `:([^:]+):` in the `text` where the group matched by the regex is the name of an emote from the known list of emotes, then the match of the regex should be displayed to the user by an image of the emote's image.
 
 The purpose of this extension is to allow the server manager to configure emote images for the users to use, similar in functionality to what is often found on forums and other platforms.
 

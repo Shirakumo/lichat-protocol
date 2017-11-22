@@ -108,6 +108,10 @@
    #:payload
    #:emotes
    #:names
+   #:emote
+   #:content-type
+   #:name
+   #:payload
    #:failure
    #:malformed-update
    #:update-too-long
