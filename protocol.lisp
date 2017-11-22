@@ -46,7 +46,9 @@
     (users T)
     (channels T)
     (backfill :registrant)
-    (data :registrant)))
+    (data :registrant)
+    (emotes T)
+    (emote :registrant)))
 
 (deftype wireable ()
   `(or real string cons symbol wire-object))
