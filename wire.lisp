@@ -37,21 +37,21 @@
   (let* ((*read-counter* 0)
          (*read-limit* limit)
          (sexpr (read-sexpr stream)))
-    (prog1
-        (typecase sexpr
-          (cons
-           (unless (typep (first sexpr) 'symbol)
-             (error 'malformed-wire-object :update sexpr))
-           (let ((class (find-class (first sexpr) NIL)))
-             (unless class (error 'unknown-wire-object :update sexpr))
-             (cond ((c2mop:subclassp class (find-class 'update))
-                    (check-update-options sexpr)
-                    (apply #'make-instance (first sexpr) :allow-other-keys T (rest sexpr)))
-                   ((c2mop:subclassp class (find-class 'wire-object))
-                    (apply #'make-instance (first sexpr) :allow-other-keys T (rest sexpr)))
-                   (T
-                    (error 'unknown-wire-object :update sexpr)))))
-          (T
-           sexpr))
+    (unwind-protect
+         (typecase sexpr
+           (cons
+            (unless (typep (first sexpr) 'symbol)
+              (error 'malformed-wire-object :update sexpr))
+            (let ((class (find-class (first sexpr) NIL)))
+              (unless class (error 'unknown-wire-object :update sexpr))
+              (cond ((c2mop:subclassp class (find-class 'update))
+                     (check-update-options sexpr)
+                     (apply #'make-instance (first sexpr) :allow-other-keys T (rest sexpr)))
+                    ((c2mop:subclassp class (find-class 'wire-object))
+                     (apply #'make-instance (first sexpr) :allow-other-keys T (rest sexpr)))
+                    (T
+                     (error 'unknown-wire-object :update sexpr)))))
+           (T
+            sexpr))
       (loop for char = (read-char stream NIL)
             until (or (not char) (char= #\Nul char))))))
