@@ -76,7 +76,7 @@
 
 (defun password-p (pass)
   (and (stringp pass)
-       (<= 6 (length pass))))
+       (<= 6 (length pass) 32)))
 
 (deftype password ()
   `(satisfies password-p))

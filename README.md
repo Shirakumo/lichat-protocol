@@ -47,6 +47,9 @@ A user's name must be between 1 and 32 characters long, where each character mus
 #### 2.3 Profile
 The `profile` primarily exists to allow end-users to log in to a user through a password and thus secure the username from being taken by others. A profile has a maximal lifetime. If the user associated with the profile has not been used for longer than the profile's lifetime, the profile is deleted.
 
+##### 2.3.1 Password Constraints
+A profile's password must be between 6 and 32 characters long. It may contain any kind of character that is not Null (`U+0000`).
+
 #### 2.4 Channel
 `channel`s represent communication channels for users over which they can send messages to each other. A channel has a set of permission rules that constrain what kind of updates may be performed on the channel by whom. There are three types of channels that only differ in their naming scheme and their permissions.
 
