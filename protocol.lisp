@@ -115,7 +115,6 @@
 
 (define-protocol-class profile (named-object server-object)
   ((name :slot-type username)
-   (password :initarg :password :accessor password :slot-type password)
    (lifetime :initarg :lifetime :accessor lifetime :slot-type (integer 0)))
   (:default-initargs
    :lifetime *default-profile-lifetime*))

@@ -57,7 +57,6 @@
    #:named-object
    #:name
    #:profile
-   #:password
    #:lifetime
    #:user
    #:connections
