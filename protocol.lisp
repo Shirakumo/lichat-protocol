@@ -271,6 +271,9 @@
    (name :initarg :name :accessor name :slot-type string)
    (payload :initarg :payload :accessor payload :slot-type string)))
 
+(define-protocol-class edit (message)
+  ())
+
 ;; Errors
 (define-protocol-class failure (text-update)
   ())

@@ -272,6 +272,13 @@ When the client sees a `message` update, every match of the regex `:([^:]+):` in
 
 The purpose of this extension is to allow the server manager to configure emote images for the users to use, similar in functionality to what is often found on forums and other platforms.
 
+#### 7.4 Edit (shirakumo-edit)
+A new update type called `edit` is introduced, which is a `message`. If the server receives an `edit` update it acts in the same way as a regular `message` event. No additional support from the server is required outside of recognising and accepting the type.
+
+When the client sees an `edit` update, it should change the `text` of the `message` update with the same `from` and `id` fields to the one from the `edit` update. Ideally a user interface for Lichat should also include an indication that the previous message event has been changed, including perhaps even a history of all the potential edits of a message.
+
+If the client receives an `edit` update whose `id` and `from` fields do not refer to any previous `message` update, the client should simply ignore the update.
+
 ## See Also
 
 * [lichat-serverlib](https://shirakumo.github.io/lichat-serverlib) An agnostic implementation of the server-side protocol.

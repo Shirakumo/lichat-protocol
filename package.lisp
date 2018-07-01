@@ -111,6 +111,7 @@
    #:content-type
    #:name
    #:payload
+   #:edit
    #:failure
    #:malformed-update
    #:update-too-long
