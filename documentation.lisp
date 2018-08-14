@@ -218,7 +218,8 @@ This is according to §2.2.1 and §2.4.4.")
     "Returns true if the given name is a valid name for users.
 
 That is to say, the name must be a string in [1,32] of length
-and each character must be in the allowed unicode regions.
+and each character must be in the allowed unicode regions. The
+name must also not begin or end with a space.
 
 See VALID-NAME-CHAR-P")
 
@@ -230,7 +231,7 @@ See USERNAME-P")
   (function channelname-p
     "Returns true if the given name is a valid name for channels.
 
-That is to say, the name must be a string in [1,32] of length.")
+See USERNAME-P")
 
   (type channelname
     "Type that is satisfied for all channelname strings.
@@ -421,12 +422,12 @@ This update must be the first thing sent by the client upon
 connection establishment.
 
 Possible responses:
-CONNECT
-BAD-NAME
-INVALID-PASSWORD
-USERNAME-TAKEN
-NO-SUCH-PROFILE
-INCOMPATIBLE-VERSION
+See CONNECT
+See BAD-NAME
+See INVALID-PASSWORD
+See USERNAME-TAKEN
+See NO-SUCH-PROFILE
+See INCOMPATIBLE-VERSION
 
 See PASSWORD
 See VERSION
@@ -441,8 +442,8 @@ See CONNECT")
     "Update to represent a disconnection request.
 
 Possible responses:
-DISCONNECT
-USERNAME-MISMATCH
+See DISCONNECT
+See USERNAME-MISMATCH
 
 See UPDATE")
 
@@ -450,10 +451,11 @@ See UPDATE")
     "Update to represent a registration request.
 
 Possible responses:
-REGISTER
-BAD-NAME
-USERNAME-MISMATCH
-INSUFFICIENT-PERMISSIONS
+See REGISTRATION-REJECTED
+See REGISTER
+See BAD-NAME
+See USERNAME-MISMATCH
+See INSUFFICIENT-PERMISSIONS
 
 See UPDATE")
 
@@ -494,12 +496,12 @@ See TEXT-UPDATE")
     "Update to represent a channel join request.
 
 Possible responses:
-JOIN
-BAD-NAME
-USERNAME-MISMATCH
-ALREADY-IN-CHANNEL
-NO-SUCH-CHANNEL
-INSUFFICIENT-PERMISSIONS
+See JOIN
+See BAD-NAME
+See USERNAME-MISMATCH
+See ALREADY-IN-CHANNEL
+See NO-SUCH-CHANNEL
+See INSUFFICIENT-PERMISSIONS
 
 See CHANNEL-UDPATE")
 
@@ -507,12 +509,12 @@ See CHANNEL-UDPATE")
     "Update to represent a channel leave request.
 
 Possible responses:
-LEAVE
-BAD-NAME
-USERNAME-MISMATCH
-NOT-IN-CHANNEL
-NO-SUCH-CHANNEL
-INSUFFICIENT-PERMISSIONS
+See LEAVE
+See BAD-NAME
+See USERNAME-MISMATCH
+See NOT-IN-CHANNEL
+See NO-SUCH-CHANNEL
+See INSUFFICIENT-PERMISSIONS
 
 See CHANNEL-UDPATE")
 
@@ -524,12 +526,12 @@ is constructed. You can obtain the name of the anonymous
 channel by reading it out of the JOIN response.
 
 Possible responses:
-JOIN
-BAD-NAME
-USERNAME-MISMATCH
-CHANNELNAME-TAKEN
-BAD-NAME
-INSUFFICIENT-PERMISSIONS
+See JOIN
+See BAD-NAME
+See USERNAME-MISMATCH
+See CHANNELNAME-TAKEN
+See BAD-NAME
+See INSUFFICIENT-PERMISSIONS
 
 See CHANNEL-UPDATE")
 
@@ -537,13 +539,13 @@ See CHANNEL-UPDATE")
     "Update to represent a user kick request.
 
 Possible responses:
-KICK
-BAD-NAME
-USERNAME-MISMATCH
-NOT-IN-CHANNEL
-NO-SUCH-USER
-NO-SUCH-CHANNEL
-INSUFFICIENT-PERMISSIONS
+See KICK
+See BAD-NAME
+See USERNAME-MISMATCH
+See NOT-IN-CHANNEL
+See NO-SUCH-USER
+See NO-SUCH-CHANNEL
+See INSUFFICIENT-PERMISSIONS
 
 See TARGET-UPDATE
 See CHANNEL-UPDATE")
@@ -554,13 +556,13 @@ See CHANNEL-UPDATE")
 The user will be automatically joined to the channel.
 
 Possible responses:
-JOIN
-BAD-NAME
-USERNAME-MISMATCH
-ALREADY-IN-CHANNEL
-NO-SUCH-USER
-NO-SUCH-CHANNEL
-INSUFFICIENT-PERMISSIONS
+See JOIN
+See BAD-NAME
+See USERNAME-MISMATCH
+See ALREADY-IN-CHANNEL
+See NO-SUCH-USER
+See NO-SUCH-CHANNEL
+See INSUFFICIENT-PERMISSIONS
 
 See TARGET-UPDATE
 See CHANNEL-UPDATE")
@@ -571,11 +573,11 @@ See CHANNEL-UPDATE")
 If PERMISSIONS is NIL, the permissions are not changed.
 
 Possible responses:
-PERMISSIONS
-BAD-NAME
-USERNAME-MISMATCH
-NO-SUCH-CHANNEL
-INSUFFICIENT-PERMISSIONS
+See PERMISSIONS
+See BAD-NAME
+See USERNAME-MISMATCH
+See NO-SUCH-CHANNEL
+See INSUFFICIENT-PERMISSIONS
 
 See PERMISSIONS
 See CHANNEL-UPDATE")
@@ -584,11 +586,11 @@ See CHANNEL-UPDATE")
     "Update to represent a channel message request.
 
 Possible responses:
-MESSAGE
-BAD-NAME
-USERNAME-MISMATCH
-NO-SUCH-CHANNEL
-INSUFFICIENT-PERMISSIONS
+See MESSAGE
+See BAD-NAME
+See USERNAME-MISMATCH
+See NO-SUCH-CHANNEL
+See INSUFFICIENT-PERMISSIONS
 
 See CHANNEL-UPDATE
 See TEXT-UPDATE")
@@ -610,9 +612,9 @@ See USERS")
     "Update to represent a channels listing request.
 
 Possible responses:
-CHANNELS
-BAD-NAME
-USERNAME-MISMATCH
+See CHANNELS
+See BAD-NAME
+See USERNAME-MISMATCH
 
 See CHANNELS
 See UPDATE")
@@ -621,10 +623,10 @@ See UPDATE")
     "Update to represent a user information request.
 
 Possible responses:
-USER-INFO
-BAD-NAME
-USERNAME-MISMATCH
-NO-SUCH-USER
+See USER-INFO
+See BAD-NAME
+See USERNAME-MISMATCH
+See NO-SUCH-USER
 
 See REGISTERED
 See CONNECTIONS
@@ -635,6 +637,67 @@ See TARGET-UPDATE")
 
 See USER-INFO")
 
+  (type backfill
+    "Update to represent a backfill request.
+
+Possible responses:
+See NOT-IN-CHANNEL
+
+See CHANNEL-UPDATE")
+
+  (type data
+    "Update to represent a raw data message.
+
+Possible responses:
+See NOT-IN-CHANNEL
+See BAD-CONTENT-TYPE
+See DATA
+
+See CONTENT-TYPE
+See FILENAME
+See PAYLOAD
+See CHANNEL-UPDATE")
+
+  (function content-type
+    "Returns the content-type of the encoded data payload.
+
+See DATA")
+
+  (function filename
+    "Returns the file name of the file sent by the data payload.
+
+See DATA")
+
+  (function payload
+    "Returns a base64 encoded data payload.
+
+See DATA
+See EMOTE")
+
+  (type emotes
+    "Update to represent an emote listing request.
+
+Possible responses:
+See EMOTE
+
+See UPDATE
+See NAMES")
+
+  (type emote
+    "Update to represent an emote entity.
+
+This should only be sent by the server.
+
+See CONTENT-TYPE
+See NAME
+See PAYLOAD
+See UPDATE")
+
+  (type edit
+    "Update to represent a change to an existing message.
+
+See MESSAGE")
+
   (type failure
     "Superclass for all failure response updates.
 
@@ -642,6 +705,11 @@ See TEXT-UDPATE")
 
   (type malformed-update
     "Update in response to a malformed update.
+
+See FAILURE")
+
+  (type update-too-long
+    "Update in response to an update that contained too many characters.
 
 See FAILURE")
 
@@ -658,7 +726,8 @@ See FAILURE")
   (type update-failure
     "Update in response to an update request that failed.
 
-See UPDATE-ID")
+See UPDATE-ID
+See FAILURE")
 
   (function update-id
     "Accessor to the ID of the update that failed to be completed.
@@ -706,16 +775,25 @@ See UPDATE-FAILURE")
 
 See UPDATE-FAILURE")
 
+  (type registration-rejected
+    "Update in response to a REGISTER request that the server rejected.
+
+See UPDATE-FAILURE")
+
   (type already-in-channel
     "Update in response to a JOIN/PULL request for a user that is already in the specified channel.
 
 See UPDATE-FAILURE")
 
   (type not-in-channel
-    "Update in response to a LEAVE/KICK request for a user that is not in the specified channel.")
+    "Update in response to a LEAVE/KICK request for a user that is not in the specified channel.
+
+See UPDATE-FAILURE")
 
   (type channelname-taken
-    "Update in response to a CREATE request for a channel that already exists.")
+    "Update in response to a CREATE request for a channel that already exists.
+
+See UPDATE-FAILURE")
 
   (type bad-name
     "Update in response to any named request with a name that is not valid.
@@ -745,7 +823,18 @@ See UPDATE-FAILURE")
 When this update is sent, any number of future updates
 that are received may be dropped instead.
 
-See UPDATE-FAILURE"))
+See UPDATE-FAILURE")
+
+  (type bad-content-type
+    "Update in response to a DATA update with a content-type the server does not support.
+
+See UPDATE-FAILURE
+See ALLOWED-CONTENT-TYPES")
+
+  (function allowed-content-types
+    "Returns a list of allowed content-type identifiers that the server supports.
+
+See BAD-CONTENT-TYPE"))
 
 ;; reader.lisp
 (docs:define-docs
