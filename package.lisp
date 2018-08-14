@@ -126,6 +126,7 @@
    #:no-such-profile
    #:username-taken
    #:no-such-channel
+   #:registration-rejected
    #:already-in-channel
    #:not-in-channel
    #:channelname-taken

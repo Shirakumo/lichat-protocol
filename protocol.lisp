@@ -331,6 +331,10 @@
   ()
   (:default-initargs :text "No such channel exists on the server."))
 
+(define-protocol-class registration-rejected (update-failure)
+  ()
+  (:default-initargs :text "Your profile registration was rejected."))
+
 (define-protocol-class already-in-channel (update-failure)
   ()
   (:default-initargs :text "The user is already in the channel."))

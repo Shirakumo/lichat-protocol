@@ -134,7 +134,8 @@ An update is always checked as follows:
 #### 5.2 Profile Registration
 When a user sends a `register` update, the server must act as follows:
 
-1. If a profile of the same name as the user does not already exist, the profile is created.
+1. If the server disagrees with the attempted registration, a `registration-rejected` update is sent back and the request is dropped.
+1. If the profile does not yet exist, it is created.
 1. The password of the profile associated to the user is changed to match the one from the update.
 1. The profile must stay live until at least 30 days after the user associated with the profile has existed on the server.
 
