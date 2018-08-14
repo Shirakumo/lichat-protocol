@@ -63,7 +63,9 @@
 (defun username-p (name)
   (and (stringp name)
        (<= 1 (length name) 32)
-       (every #'valid-name-char-p name)))
+       (every #'valid-name-char-p name)
+       (char/= #\Space (char name 0))
+       (char/= #\Space (char name (1- (length name))))))
 
 (deftype username ()
   `(satisfies username-p))

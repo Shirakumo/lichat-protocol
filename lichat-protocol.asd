@@ -5,7 +5,7 @@
 |#
 
 (asdf:defsystem lichat-protocol
-  :version "1.3"
+  :version "1.4"
   :license "Artistic"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
