@@ -43,7 +43,7 @@ Each client is connected to the server through a `connection` object. Each conne
 
 ##### 2.2.1 User Name Constraints
 A user's name must be between 1 and 32 characters long, where each character must be from the Unicode general categories Letter, Mark, Number, Punctuation, and Symbol, or be a Space (`U+0020`). The name must not begin or end with 
-with Spaces (`U+0020`).
+with Spaces (`U+0020`). Two user names are considered the same if they are the same length and each code point matches case-insensitively.
 
 #### 2.3 Profile
 The `profile` primarily exists to allow end-users to log in to a user through a password and thus secure the username from being taken by others. A profile has a maximal lifetime. If the user associated with the profile has not been used for longer than the profile's lifetime, the profile is deleted.
