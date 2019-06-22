@@ -6,7 +6,7 @@
 
 (asdf:defsystem lichat-protocol
   :version "1.4"
-  :license "Artistic"
+  :license "zlib"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "The independent protocol part of Lichat."
