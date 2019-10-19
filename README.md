@@ -221,6 +221,7 @@ A server or client may provide extensions to the protocol in the following manne
 
 * **Additional Update Types** -- If such an update is sent to a client that does not recognise it, it should be ignored. If such an update is sent to a server that does not recognise it, the server will respond with an `invalid-update`.
 * **Additional Update Fields** -- A client or server may extend the existing update classes with additional, optional fields to provide further information or other kinds of behaviour. The server or client is not allowed to introduce additional required fields. When an update with unknown initargs is received, the unknown initargs are to be ignored.
+* **Additional Constraints** -- An extension may introduce additional constraints and restrictions on whether existing updates are considered valid.
 
 Each extension to the protocol should receive a unique name of the form `producer-name` where `producer` is an identifier for who wrote up the extension's protocol, and `name` should be a name for the extension itself. For each extension that a server and client support, they must include the unique name of it as a string in the `connect` update's `extensions` list.
 
@@ -280,6 +281,21 @@ A new update type called `edit` is introduced, which is a `message`. If the serv
 When the client sees an `edit` update, it should change the `text` of the `message` update with the same `from` and `id` fields to the one from the `edit` update. Ideally a user interface for Lichat should also include an indication that the previous message event has been changed, including perhaps even a history of all the potential edits of a message.
 
 If the client receives an `edit` update whose `id` and `from` fields do not refer to any previous `message` update, the client should simply ignore the update.
+
+#### 7.5 Channel Trees (shirakumo-channel-trees)
+A new convention for channel names is introduced. §2.4.4 is restricted further in the following manner: forward slash characters (`U+002F`) may only occur between two other characters that are not a forward slash character.
+
+Generally for a `channel-update`, the following terminology is introduced: the `parent channel` is a channel with the name of the current channel up to and excluding the last forward slash character in the name. If no forward slash occurs in the name, the primary channel is considered the parent channel.
+
+A new error `no-such-parent-channel` is introduced. It is an `update-failure`.
+
+§5.3 is modified as follows: instead of point `1`: The update is checked for permissions by the parent channel. After point `2`: If the parent channel does not exist, the server responds with a `no-such-parent-channel` update and drops the request.
+
+§5.5.1 is modified as follows: the `channels` update is upgraded to a `channel-update` and as such contains a `channel` field. When processing the `channels` update, the server should only process channels whose names begin with the name mentioned in the `channel` field followed by a forward slash and do not contain any further forward slashes.
+
+Specifically, an update requesting ``foo`` should list ``foo/bar``, but not ``foo/bar/baz``.
+
+Clients that support this extension are required to implement the following special semantic: if a user uses a command that requires a channel name, and the user begins the channel name with a forward slash, the client should automatically prepend the current channel name to the specified channel name, if there is a channel that is considered "current". If no channel is explicitly current, the primary channel is considered current.
 
 ## See Also
 
