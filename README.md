@@ -70,12 +70,13 @@ The names of channels are constrained in the same way as user names. See §2.2.1
 A permission rule specifies the restrictions of an update type on who is allowed to perform the update on the channel. The structure is as follows:
 
 ```BNF
-RULE     ::= (type EXPR*)
-EXPR     ::= COMPOUND | username | t | nil
-COMPOUND ::= (not EXPR) | (or EXPR*) | (and EXPR*)
+RULE     ::= (type EXPR)
+EXPR     ::= t | nil | EXCLUDE | INCLUDE
+EXCLUDE  ::= (- username*)
+INCLUDE  ::= (+ username*)
 ```
 
-Where `type` is the name of an update class, and `username` is the name of a user object. `t` is the CL symbol `T` and indicates "anyone". `nil` is the CL symbol `NIL` and indicates "no one". The compound operators combine the expressions logically as sensible. The expressions within the rule are combined as by an `or` compound.
+Where `type` is the name of an update class, and `username` is the name of a user object. `t` is the CL symbol `T` and indicates "anyone". `nil` is the CL symbol `NIL` and indicates "no one". The `INCLUDE` expression only allows users whose names are listed to perform the action. The `EXCLUDE` expression allows anyone except users whose names are listed to perform the action. The expression `t` is thus equivalent to `(-)` and the expression `nil` is equivalent to `(+)`.
 
 ### 3. General Interaction
 The client and the server communicate through `update` objects over a connection. Each such object that is issued from the client must contain a unique `id`. This is important as the ID is reused by the server in order to communicate replies. The client can then compare the ID of the incoming updates to find the response to an earlier request, as responses may be reordered or delayed. The server does not check the ID in any way-- uniqueness and avoidance of clashing is the responsibility of the client. Each update must also contain a `clock` slot that specifies the time of sending. This is used to calculate latency and potential connection problems.

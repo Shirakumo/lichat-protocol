@@ -5,7 +5,7 @@
 |#
 
 (asdf:defsystem lichat-protocol
-  :version "1.4"
+  :version "1.5"
   :license "zlib"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
