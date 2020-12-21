@@ -11,7 +11,7 @@ OBJECT   ::= '(' WHITE* SYMBOL (WHITE+ KEYWORD WHITE+ EXPR)* WHITE* ')'
 EXPR     ::= STRING | LIST | SYMBOL | NUMBER
 STRING   ::= '"' ('\' ANY | !('"' | NULL))* '"'
 LIST     ::= '(' WHITE* (EXPR (WHITE+ EXPR)*)? WHITE* ')'
-SYMBOL   ::= KEYWORD | '#' ':' NAME | NAME ':' NAME
+SYMBOL   ::= KEYWORD | NAME ':' NAME
 KEYWORD  ::= ':' NAME
 NUMBER   ::= '0..9'+ ( '.' '0..9'*)? | '.' '0..9'*
 NAME     ::= (('\' ANY) | !(TERMINAL | NULL))+
@@ -24,7 +24,7 @@ ANY      ::= !NULL
 See `to-wire`, `from-wire`.
 
 #### 1.1 Symbols
-Special care must be taken when reading and printing symbols. Symbols that come from the `lichat-protocol` package must be printed without the package name prefix. Symbols from the `keyword` package must be printed by their name only prefixed by a `:`. Symbols without a package must be printed by their name only and prefixed by a `#:`. Every other symbol must be prefixed by the symbol's package's name followed by a `:`. When a symbol is read, it is checked whether it exists in the corresponding package laid out by the previous rules. If it does not exist, the expression is not valid and an error must be generated, but only after the expression has been read to completion.
+Special care must be taken when reading and printing symbols. Symbols that come from the `lichat-protocol` package must be printed without the package name prefix. Symbols from the `keyword` package must be printed by their name only prefixed by a `:`. Every other symbol must be prefixed by the symbol's package's name followed by a `:`. When a symbol is read, it is checked whether it exists in the corresponding package laid out by the previous rules. If it does not exist, the expression is not valid and an error must be generated, but only after the expression has been read to completion.
 
 #### 1.2 Objects
 Only Common Lisp objects of type `wireable` can be serialised to the wire format. Special care must also be taken when `wire-object`s are read from the wire. An error must be generated if the object is malformed by either a non-symbol in the first place of its list, imbalanced key/value pairs in the tail, or non-keywords in the key position. An error must also be generated if the symbol at the first position does not name a class that is a subclass of `wire-object`. If it is a subclass of `update`, the keys (and values) named `:id` and `:clock` must also be present, lest an error be generated.
@@ -140,6 +140,7 @@ When a user sends a `register` update, the server must act as follows:
 1. If the profile does not yet exist, it is created.
 1. The password of the profile associated to the user is changed to match the one from the update.
 1. The profile must stay live until at least 30 days after the user associated with the profile has existed on the server.
+1. The server responds by sending back the original `register` update.
 
 Note that the server does not need to store the password verbatim, and is instead advised to only store and compare a hash of it.
 
@@ -209,12 +210,14 @@ Retrieving a list of channels can be done with the `channels` update, after whic
 ##### 5.5.2 Listing All Users of a Channel
 The list of users currently in a channel can be retrieved by the `users` update, after which the server acts as follows:
 
+1. If the user is not in the named channel, a `not-in-channel` update is sent back and the request is dropped.
 1. A list of the users in the channel is recorded.
 1. A `users` update with the same `id` as the request is sent back with the `users` field set to the list of names of users that were recorded.
 
 ##### 5.5.3 Requesting Information About a User
 Finally, information about a particular user can be retrieved by the `user-info` update, after which the server acts as follows:
 
+1. If the user is not connected and no profile for the user exists, a `no-such-user` update is sent back and the request is dropped.
 1. A `user-info` update with the same `id` as the request is sent back with the `connections` field set to the number of connections the user object has associated with it and with the `registered` field set to `T` if the user has a profile associated with it.
 
 ### 6. Protocol Extension
@@ -304,3 +307,5 @@ Clients that support this extension are required to implement the following spec
 * [lichat-tcp-server](https://shirakumo.github.io/lichat-tcp-server) A basic, threaded, TCP-based implementation of a Lichat server.
 * [lichat-tcp-client](https://shirakumo.github.io/lichat-tcp-client) A basic, threaded, TCP-based implementation of a Lichat client.
 * [LionChat](https://github.com/Shirakumo/lionchat) A Qt GUI client for a TCP server.
+* [Ocelot](https://github.com/Shirakumo/ocelot) An Android client for Lichat.
+* [ex-lichat](https://github.com/Shirakumo/ex-lichat) An Elixir server for Lichat.

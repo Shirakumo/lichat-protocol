@@ -373,3 +373,7 @@
   ((allowed-content-types :initarg :allowed-content-types :accessor allowed-content-types :slot-type list))
   (:default-initargs :text "The supplied content type for the data update is not accepted by this server."
                      :allowed-content-types ()))
+
+(define-protocol-class no-such-parent-channel (udpate-failure)
+  ()
+  (:default-initargs :text "The channel you are trying to create a child channel under does not exist."))
