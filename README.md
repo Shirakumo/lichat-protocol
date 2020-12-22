@@ -145,7 +145,10 @@ When a user sends a `register` update, the server must act as follows:
 Note that the server does not need to store the password verbatim, and is instead advised to only store and compare a hash of it.
 
 #### 5.3 Channel Creation & Management
-Since a channel has only two bits of information associated with it, the management of channels is rather simple. Creating a new channel happens with the `create` update:
+Since a channel has only two bits of information associated with it, the management of channels is rather simple.
+
+##### 5.3.1 Creating a Channel
+Creating a new channel happens with the `create` update:
 
 1. The update is checked for permissions by the primary channel.
 1. If a channel of the `channel` name in the update already exists, the server responds with a `channelname-taken` update and drops the request.
@@ -153,9 +156,15 @@ Since a channel has only two bits of information associated with it, the managem
 1. The user is automatically joined to the channel.
 1. The server responds with a `join` update to the user with the `id` being the same as the id of the create update.
 
-From there on out the channel's permissions can be viewed or changed with the `permissions` update, if the channel allows you to do so. Note that the server must only update the channel's permissions, if the update's `permissions` field is not `NIL`.
+##### 5.3.2 Updating a Channel
+The channel's permissions can be viewed or changed with the `permissions` update, if the channel allows you to do so.
 
-See §2.5 for an explanation of the proper syntax of the permissions.
+1. The permissions for the channel are updated with the ones specified in the update's `permissions` field as follows:
+   1. For each rule in the specified permissions set in the update:
+   1. Set the rule with the same type in the channel's rule set to the given rule.
+1. The server responds with a `permissions` update with the `permissions` field set to the full permissions set of the channel, and the `id` being the same as the id of the update the user sent.
+
+See §2.5 for an explanation of the proper syntax of the permissions. Note that the server may reduce the set of rules to a simpler set that is semantically equivalent.
 
 #### 5.4 Channel Interaction
 A user can interact with a channel in several ways. 
