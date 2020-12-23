@@ -21,7 +21,10 @@
     (users T)
     (channels T)
     (backfill T)
-    (data T)))
+    (data T)
+    (edit T)
+    (channel-info T)
+    (set-channel-info (+ :registrant))))
 
 (defparameter *default-anonymous-channel-permissions*
   '((permissions)
@@ -33,7 +36,10 @@
     (users)
     (channels)
     (backfill T)
-    (data T)))
+    (data T)
+    (edit T)
+    (channel-info T)
+    (set-channel-info (+ :registrant))))
 
 (defparameter *default-primary-channel-permissions*
   '((permissions (+ :registrant))
@@ -48,7 +54,10 @@
     (backfill (+ :registrant))
     (data (+ :registrant))
     (emotes T)
-    (emote (+ :registrant))))
+    (emote (+ :registrant))
+    (edit)
+    (channel-info T)
+    (set-channel-info (+ :registrant))))
 
 (deftype wireable ()
   `(or real string cons symbol wire-object))
