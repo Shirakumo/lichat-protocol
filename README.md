@@ -103,6 +103,8 @@ After the connection between a client and a server has been established through 
 1. If the user already existed, the server responds with `join` updates for each of the channels the user is currently inhabiting.
 1. If the user did not already exist, it is joined to the primary channel.
 
+Should the user send a `connect` update after already having completed the connection handshake above, the server must drop the update and respond with an `already-connected` update.
+
 #### 4.2 Connection Maintenance
 If the `clock` of an update diverges too much from the one known by the server, the server may drop the connection after replying with a `connection-unstable` update.
 
@@ -161,7 +163,8 @@ The channel's permissions can be viewed or changed with the `permissions` update
 
 1. The permissions for the channel are updated with the ones specified in the update's `permissions` field as follows:
    1. For each rule in the specified permissions set in the update:
-   1. Set the rule with the same type in the channel's rule set to the given rule.
+   1. If the rule should be malformed or unacceptable, the server responds with a `invalid-permissions` update and disregards the rule.
+   1. Otherwise, set the rule with the same type in the channel's rule set to the given rule.
 1. The server responds with a `permissions` update with the `permissions` field set to the full permissions set of the channel, and the `id` being the same as the id of the update the user sent.
 
 See §2.5 for an explanation of the proper syntax of the permissions. Note that the server may reduce the set of rules to a simpler set that is semantically equivalent.

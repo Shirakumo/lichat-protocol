@@ -362,7 +362,7 @@
   (:default-initargs :text "You do not have sufficient permissions to perform the requested action."))
 
 (define-protocol-class invalid-permissions (update-failure)
-  ()
+  ((rule :initarg :rule :accessor rule :slot-type list))
   (:default-initargs :text "The permissions are malformed."))
 
 (define-protocol-class no-such-user (update-failure)
