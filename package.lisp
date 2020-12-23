@@ -120,6 +120,7 @@
    #:update-failure
    #:update-id
    #:invalid-update
+   #:already-connected
    #:username-mismatch
    #:incompatible-version
    #:invalid-password

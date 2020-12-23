@@ -309,6 +309,10 @@
   ()
   (:default-initargs :text "The update class is invalid."))
 
+(define-protocol-class already-connected (update-failure)
+  ()
+  (:default-initargs :text "You have already connected to an account."))
+
 (define-protocol-class username-mismatch (update-failure)
   ()
   (:default-initargs :text "The FROM field did not match the known username of the connection."))

@@ -6,7 +6,7 @@ This system specifies and implements the protocol of the Lichat chat system. It 
 The wire format is based on UTF-8 character streams on which objects are serialised in a secure, simplified s-expression format. The format is as follows:
 
 ```BNF
-WIREABLE ::= OBJECT | STRING | SYMBOL | NUMBER
+UPDATE   ::= OBJECT NULL
 OBJECT   ::= '(' WHITE* SYMBOL (WHITE+ KEYWORD WHITE+ EXPR)* WHITE* ')'
 EXPR     ::= STRING | LIST | SYMBOL | NUMBER
 STRING   ::= '"' ('\' ANY | !('"' | NULL))* '"'
@@ -15,7 +15,7 @@ SYMBOL   ::= KEYWORD | NAME ':' NAME
 KEYWORD  ::= ':' NAME
 NUMBER   ::= '0..9'+ ( '.' '0..9'*)? | '.' '0..9'*
 NAME     ::= (('\' ANY) | !(TERMINAL | NULL))+
-TERMINAL ::= ('0..9' | ':' | ' ' | '"' | '.' | '(' | ')')
+TERMINAL ::= (':' | ' ' | '"' | '.' | '(' | ')')
 WHITE    ::= U+0009 | U+000A | U+000B | U+000C | U+000D | U+0020
 NULL     ::= U+0000
 ANY      ::= !NULL
@@ -84,7 +84,7 @@ The client and the server communicate through `update` objects over a connection
 When an update is sent to a channel, it is distributed to all the users currently in the channel. When an update is sent to a user, it is distributed to all the connections of the user. When an update is sent to a connection, it is serialised to the wire according to the above wire format specification. The actual underlying mechanism that transfers the characters of the wire format to the remote host is implementation-dependant.
 
 #### 3.1 Null Termination of Updates
-Following each update that is put on the wire has to be a single null character (`U+0000`). This character can be used to distinguish individual updates on the wire and may serve as a marker to attempt and stabilise the stream in case of malformed updates or other problems that might occur on the lower level.
+At the end of each update there has to be a single null character (`U+0000`). This character can be used to distinguish individual updates on the wire and may serve as a marker to attempt and stabilise the stream in case of malformed updates or other problems that might occur on the lower level.
 
 ### 4. Connection
 #### 4.1 Connection Establishment
