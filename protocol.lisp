@@ -276,6 +276,14 @@
 (define-protocol-class edit (message)
   ())
 
+(define-protocol-class channel-info (channel-update)
+  ((keys :initarg :keys :accessor keys :slot-type (or list T)))
+  (:default-initargs :keys T :text NIL))
+
+(define-protocol-class set-channel-info (channel-update)
+  ((key :initarg :key :accessor key :slot-type symbol)
+   (text :initarg :text :accessor text :slot-type string)))
+
 ;; Errors
 (define-protocol-class failure (text-update)
   ())
@@ -381,3 +389,11 @@
 (define-protocol-class no-such-parent-channel (udpate-failure)
   ()
   (:default-initargs :text "The channel you are trying to create a child channel under does not exist."))
+
+(define-protocol-class no-such-channel-info (update-failure)
+  ((key :initarg :key :accessor key :slot-type symbol))
+  (:default-initargs :text "The requested channel info key does not exist."))
+
+(define-protocol-class malformed-channel-info (update-failure)
+  ()
+  (:default-initargs :text "The specified info was not of the correct format for the key."))

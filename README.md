@@ -313,6 +313,35 @@ Specifically, an update requesting ``foo`` should list ``foo/bar``, but not ``fo
 
 Clients that support this extension are required to implement the following special semantic: if a user uses a command that requires a channel name, and the user begins the channel name with a forward slash, the client should automatically prepend the current channel name to the specified channel name, if there is a channel that is considered "current". If no channel is explicitly current, the primary channel is considered current.
 
+#### 7.6 Channel Data (shirakumo-channel-info)
+Channels receive extra metadata fields that can be set set by users. To this end, channels must keep a table of `metadata` to track. The server must restrict the valid keys in that table, and may restrict the length of values associated with each key. The following keys must always be available, with the specified intended purposes:
+
+- `:news` Updates and latest news by channel administrators
+- `:topic` A description of the general discussion topic of the channel
+- `:rules` A Description of the rules that need to be followed by channel members
+- `:contact` Information on how to reach contact persons for administrative problems
+
+A new update called `channel-info` is introduced. It is a `channel-update` and holds a `keys` field that can either be `T` or a list of keys as symbols describing the info to fetch.
+
+A new update called `set-channel-info` is introduced. It is a `channel-update` and holds a `key` field that must be a symbol describing the info to set, as well as a `text` field, which must be a string describing the contents to be associated with the key.
+
+A new error `no-such-channel-info` is introduced. It is an `update-failure` and contains the additional field `key`, which must hold a symbol.
+
+A new error `malformed-channel-info` is introduced. It is an `update-failure`.
+
+When the server receives a `channel-info` update, it must react as follows:
+
+1. For each of the requested keys, the server reacts as follows:
+  1. If the key does not exist, the server replies with a `no-such-channel-info` failure with the according `key` set, and the `id` set to the `id` of the original update.
+  1. Otherwise, the server replies with a `set-channel-info` update with the same `id` as the request, `key` set to the current key being requested, and `text` being set to the key's value.
+
+When the server receives a `set-channel-info` update, it must react as follows:
+
+1. If the specified `key` is not accepted by the server, it replies with a `no-such-channel-info` error and drops the update.
+1. If the specified `text` is not of the correct format for the given `key`, it replies with a `malformed-channel-info` error and drops the update.
+1. The internal channel metadata is updated to associate the given `key` with the given `text`.
+1. The user's `set-channel-info` update is distributed to all users in the channel.
+
 ## See Also
 
 * [lichat-serverlib](https://shirakumo.github.io/lichat-serverlib) An agnostic implementation of the server-side protocol.

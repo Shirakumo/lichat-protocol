@@ -112,6 +112,10 @@
    #:name
    #:payload
    #:edit
+   #:channel-info
+   #:keys
+   #:set-channel-info
+   #:key
    #:failure
    #:malformed-update
    #:update-too-long
@@ -137,7 +141,10 @@
    #:no-such-user
    #:too-many-updates
    #:bad-content-type
-   #:allowed-content-types)
+   #:allowed-content-types
+   #:no-such-parent-channel
+   #:no-such-channel-info
+   #:malformed-channel-info)
   ;; reader.lisp
   (:export
    #:whitespace-p
