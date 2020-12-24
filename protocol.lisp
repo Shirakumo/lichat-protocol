@@ -38,8 +38,8 @@
     (backfill T)
     (data T)
     (edit T)
-    (channel-info T)
-    (set-channel-info (+ :registrant))))
+    (channel-info)
+    (set-channel-info)))
 
 (defparameter *default-primary-channel-permissions*
   '((permissions (+ :registrant))
@@ -171,7 +171,8 @@
    (from :initarg :from :accessor from :slot-type username))
   (:default-initargs
    :id (next-id)
-   :clock (get-universal-time)))
+   :clock (get-universal-time)
+   :from NIL))
 
 (defmethod print-object ((update update) stream)
   (print-unreadable-object (update stream :type T)
