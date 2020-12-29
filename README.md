@@ -246,14 +246,16 @@ Each extension to the protocol should receive a unique name of the form `produce
 The extensions outlined in this section are not mandatory and a server or client may choose not to implement them.
 
 #### 7.1 Backfill (shirakumo-backfill)
+Purpose: allow users to catch up with the contents of a channel should they initiate a new connection which does not currently have access to all the past updates of the channel. In order to facilitate this, the server is forced to keep copies of the updates. The server is allowed to only keep updates for a certain duration, or only a certain number of total updates. In order to avoid spying, the server must not distribute updates that the user did not already receive previously through another connection. The server does not have to make any guarantee about the order in which the updates are sent back to the connection. The client on the other side is responsible for ordering them as appropriate according to the clock.
+
 A new update type called `backfill` is introduced, which is a `channel-update`. If the server receives such an update from a connection, it reacts as follows:
 
 1. If the user is not in the named channel, a `not-in-channel` update is sent back and the request is dropped.
 1. Following this, updates are sent back to the connection the update came from. These updates should include all updates that were distributed to users in the channel, spanning from now to an arbitrary point in time that is at most when the user of this connection last joined the channel. The fields of the updates must be the equal to the first time the update was sent out. The initial event of the user that requested the backfill joining the channel cannot be sent back.
 
-The purpose of this extension is to allow users to catch up with the contents of a channel should they initiate a new connection which does not currently have access to all the past updates of the channel. In order to facilitate this, the server is forced to keep copies of the updates. The server is allowed to only keep updates for a certain duration, or only a certain number of total updates. In order to avoid spying, the server must not distribute updates that the user did not already receive previously through another connection. The server does not have to make any guarantee about the order in which the updates are sent back to the connection. The client on the other side is responsible for ordering them as appropriate according to the clock.
-
 #### 7.2 Data (shirakumo-data)
+Purpose: allows distributing images and other binary payloads.
+
 A new update type called `data` is introduced, which is a `channel-update`. Additionally, a new `failure` type called `bad-content-type` is introduced, which is an `update-failure`. If the server receives a `data` update from a connection, it reacts as follows:
 
 1. If the user is not in the named channel, a `not-in-channel` update is sent back and the request is dropped.
@@ -266,9 +268,9 @@ The `data` update contains three slots, with the following intentions:
 * `filename` A string representing an arbitrary name given to the payload data.
 * `payload` A base-64 encoded string of binary data payload.
 
-The purpose of this extension is to allow users to send binary data over channels. Particularly, the intention is to allow embedding of images, audio, video, and other media.
-
 #### 7.3 Emotes (shirakumo-emotes)
+Purpose: introduces server-side emoticons that are distributed to all users for use on the client-side.
+
 Two new update types called `emotes` and `emote` are introduced. If the server receives an `emotes` update from a connection, it reacts as follows:
 
 1. The server computes a set difference between the known emote names, and the names listed in the event's `names` slot. Emote names are case-insensitive.
@@ -290,9 +292,9 @@ The `emote` update contains three slots, with the following intentions:
 
 When the client sees a `message` update, every match of the regex `:([^:]+):` in the `text` where the group matched by the regex is the name of an emote from the known list of emotes, then the match of the regex should be displayed to the user by an image of the emote's image.
 
-The purpose of this extension is to allow the server manager to configure emote images for the users to use, similar in functionality to what is often found on forums and other platforms.
-
 #### 7.4 Edit (shirakumo-edit)
+Purpose: allows users to make retroactive edits to their messages.
+
 A new update type called `edit` is introduced, which is a `message`. If the server receives an `edit` update it acts in the same way as a regular `message` event. No additional support from the server is required outside of recognising and accepting the type.
 
 When the client sees an `edit` update, it should change the `text` of the `message` update with the same `from` and `id` fields to the one from the `edit` update. Ideally a user interface for Lichat should also include an indication that the previous message event has been changed, including perhaps even a history of all the potential edits of a message.
@@ -300,6 +302,8 @@ When the client sees an `edit` update, it should change the `text` of the `messa
 If the client receives an `edit` update whose `id` and `from` fields do not refer to any previous `message` update, the client should simply ignore the update.
 
 #### 7.5 Channel Trees (shirakumo-channel-trees)
+Purpose: enforces a structure on channels and allows creating channel hierarchies for easier grouping.
+
 A new convention for channel names is introduced. §2.4.4 is restricted further in the following manner: forward slash characters (`U+002F`) may only occur between two other characters that are not a forward slash character.
 
 Generally for a `channel-update`, the following terminology is introduced: the `parent channel` is a channel with the name of the current channel up to and excluding the last forward slash character in the name. If no forward slash occurs in the name, the primary channel is considered the parent channel.
@@ -315,6 +319,8 @@ Specifically, an update requesting ``foo`` should list ``foo/bar``, but not ``fo
 Clients that support this extension are required to implement the following special semantic: if a user uses a command that requires a channel name, and the user begins the channel name with a forward slash, the client should automatically prepend the current channel name to the specified channel name, if there is a channel that is considered "current". If no channel is explicitly current, the primary channel is considered current.
 
 #### 7.6 Channel Data (shirakumo-channel-info)
+Purpose: allows associating metadata with channels such as the set of rules, a topic, and so forth.
+
 Channels receive extra metadata fields that can be set set by users. To this end, channels must keep a table of `metadata` to track. The server must restrict the valid keys in that table, and may restrict the length of values associated with each key. The following keys must always be available, with the specified intended purposes:
 
 - `:news` Updates and latest news by channel administrators
@@ -342,6 +348,61 @@ When the server receives a `set-channel-info` update, it must react as follows:
 1. If the specified `text` is not of the correct format for the given `key`, it replies with a `malformed-channel-info` error and drops the update.
 1. The internal channel metadata is updated to associate the given `key` with the given `text`.
 1. The user's `set-channel-info` update is distributed to all users in the channel.
+
+#### 7.7 Server Management (shirakumo-server-management)
+Purpose: adds capabilities for administrative actions like deleting users and channels.
+
+A new update called `reload` is introduced. When the server receives a `reload` update, it must reload any possibly externalised configuration and storage it may hold.
+
+A new update called `restart` is introduced. When the server receives a `restart` update, it must disconnect all clients, clear all caches, prune all expired channels, and effectively restore a state similar to when it is first started up initially. This may for example be achieved by restarting the server process, if applicable.
+
+A new update called `kill` is introduced. It is a `target-update`. When the server receives a `kill` update, it must react as follows:
+
+1. If there is no user with a name corresponding to the `target`, the server replies with a `no-such-user` error and drops the update.
+1. The user is removed from all channels it is in.
+1. All connections the user is associated with are disconnected.
+1. The update is sent back to the user.
+
+A new update called `destroy` is introduced. It is a `channel-update`. When the server receives a `destroy` update, it must react as follows:
+
+1. Unlike standard updates, the permission for the update must be checked against the primary channel, rather than the channel the update is targeting.
+1. If there is no channel with a name corresponding to the `channel`, the server replies with a `no-such-channel` error and drops the update.
+1. All users currently in the targeted channel leave the channel.
+1. The channel is removed.
+1. The update is sent back to the user.
+
+#### 7.8 Pause (shirakumo-pause)
+Purpose: allows throttling high traffic channels to prevent frequent spam by users.
+
+Channels have a new property, a "pause", as well as a "last update list". Delivery of any `channel-update` is modified as follows:
+
+1. If the `from` field of the update denotes a user whose entry in the "last update list" is a timestamp that's closer to the current timestamp than the channel's "pause", the server responds with a `too-many-updates` error and drops the update.
+1. The current timestamp is placed into the user's entry in the "last update list".
+
+The "pause" is noted in seconds and has a default value of 0. The "last update list" has a default timestamp of 0 for users without an entry.
+
+A new update called `pause` is introduced. It is a `channel-update` and has an additional field called `by`, which must contain an integer in the range [0,infinity[. When the server receives a `pause` update, it must react as follows:
+
+1. The channel's "pause" is set to "by".
+1. The update is distributed to all users in the channel.
+
+#### 7.9 Quiet (shirakumo-quiet)
+Purpose: allows placing users onto a quiet list that prevents them from reaching any other users.
+
+Channels have a new property, a "quiet list". Delivery of any `channel-update` is modified as follows:
+
+1. If the `from` field of the update denotes a user that is on the "quiet list", the update is sent back to that user, but not delivered to the rest of the channel.
+1. Otherwise delivery proceeds as normal.
+
+A new update called `quiet` is introduced. It is a `target-update` and a `channel-update`. When the server receives a `quiet` update, it must react as follows:
+
+1. The target user is placed onto the "quiet list" of the channel.
+1. The update is sent back to the user.
+
+A new update called `unquiet` is introduced. It is a `target-update` and a `channel-update`. When the server receives an `unquiet` update, it must react as follows:
+
+1. The target user is removed from the "quiet list" of the channel.
+1. The update is sent back to the user.
 
 ## See Also
 
