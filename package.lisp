@@ -116,6 +116,12 @@
    #:keys
    #:set-channel-info
    #:key
+   #:kill
+   #:destroy
+   #:pause
+   #:by
+   #:quiet
+   #:unquiet
    #:failure
    #:malformed-update
    #:update-too-long

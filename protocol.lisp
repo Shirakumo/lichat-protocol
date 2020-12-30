@@ -294,6 +294,21 @@
   ((key :initarg :key :accessor key :slot-type symbol)
    (text :initarg :text :accessor text :slot-type string)))
 
+(define-protocol-class kill (target-update)
+  ())
+
+(define-protocol-class destroy (channel-update)
+  ())
+
+(define-protocol-class pause (channel-update)
+  ((by :initarg :by :accessor by :slot-type (integer 0))))
+
+(define-protocol-class quiet (channel-update target-update)
+  ())
+
+(define-protocol-class unquiet (channel-update target-update)
+  ())
+
 ;; Errors
 (define-protocol-class failure (text-update)
   ())
