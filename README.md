@@ -100,8 +100,8 @@ After the connection between a client and a server has been established through 
 1. If the server cannot sustain more connections for the requested user, a `too-many-connections` update is returned and the connection is closed.
 1. A user corresponding in name to the `from` field is created if it does not yet exist.
 1. The connection is tied to its corresponding user object.
-1. The server responds with a `connect` update of the same id as the one the client sent. The `from` field must correspond to the server's user object's name.
-1. If the user already existed, the server responds with `join` updates for each of the channels the user is currently inhabiting.
+1. The server responds with a `connect` update of the same id as the one the client sent. The `from` field must correspond to the user's actual name.
+1. If the user already existed, the server responds with `join` updates for each of the channels the user is currently inhabiting, with the primary channel always being the first.
 1. If the user did not already exist, it is joined to the primary channel.
 
 Should the user send a `connect` update after already having completed the connection handshake above, the server must drop the update and respond with an `already-connected` update.
