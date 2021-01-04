@@ -107,7 +107,7 @@ After the connection between a client and a server has been established through 
 Should the user send a `connect` update after already having completed the connection handshake above, the server must drop the update and respond with an `already-connected` update.
 
 #### 4.2 Connection Maintenance
-If the `clock` of an update diverges too much from the one known by the server, the server may drop the connection after replying with a `connection-unstable` update.
+If the `clock` of an update diverges too much, the server may respond with a `clock-skewed` update and correct the timestamp. If the skew varies a lot, the server may drop the connection after replying with a `connection-unstable` update.
 
 The server must receive an update on a connection within at least a certain implementation-dependant interval that must be larger than 100 seconds. If this does not happen, the server may assume a disconnection and drop the client after replying with a `connection-unstable` update. If the server does not receive an update from the client within an interval of up to 60 seconds, the server must send a `ping` update to the client, to which the client must respond with a `pong` update. This is to ensure the stability of the connection.
 

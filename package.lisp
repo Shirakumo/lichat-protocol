@@ -150,7 +150,8 @@
    #:allowed-content-types
    #:no-such-parent-channel
    #:no-such-channel-info
-   #:malformed-channel-info)
+   #:malformed-channel-info
+   #:clock-skewed)
   ;; reader.lisp
   (:export
    #:whitespace-p

@@ -422,3 +422,7 @@
 (define-protocol-class malformed-channel-info (update-failure)
   ()
   (:default-initargs :text "The specified info was not of the correct format for the key."))
+
+(define-protocol-class clock-skewed (update-failure)
+  ()
+  (:default-initargs :text "Your clock is out of sync. You should synchronise with a time server."))
