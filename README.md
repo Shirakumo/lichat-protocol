@@ -352,9 +352,11 @@ When the server receives a `set-channel-info` update, it must react as follows:
 #### 7.7 Server Management (shirakumo-server-management)
 Purpose: adds capabilities for administrative actions like deleting users and channels.
 
-A new update called `reload` is introduced. When the server receives a `reload` update, it must reload any possibly externalised configuration and storage it may hold.
+The server now holds an additional property, a `blacklist`, which is a set of usernames.
 
-A new update called `restart` is introduced. When the server receives a `restart` update, it must disconnect all clients, clear all caches, prune all expired channels, and effectively restore a state similar to when it is first started up initially. This may for example be achieved by restarting the server process, if applicable.
+§4.1 is modified to include the following step after §4.1.4 (Checking for name validity):
+
+1. If the name is part of the `blacklist` set, a `too-many-connections` update is returned and the connection is closed.
 
 A new update called `kill` is introduced. It is a `target-update`. When the server receives a `kill` update, it must react as follows:
 
@@ -367,8 +369,20 @@ A new update called `destroy` is introduced. It is a `channel-update`. When the 
 
 1. Unlike standard updates, the permission for the update must be checked against the primary channel, rather than the channel the update is targeting.
 1. If there is no channel with a name corresponding to the `channel`, the server replies with a `no-such-channel` error and drops the update.
-1. All users currently in the targeted channel leave the channel.
+1. A `leave` update for the channel is sent to every user in the channel.
 1. The channel is removed.
+1. The update is sent back to the user.
+
+A new update called `ban` is introduced. It is a `target-update`. When the server receives a `ban` update, it must react as follows:
+
+1. The `target` is added to the `blacklist` set.
+1. If a user with the `target` name is present, the user is removed from all channels it is in.
+1. All connections the user is associated with are disconnected.
+1. The update is sent back to the user.
+
+A new update called `unban` is introduced. It is a `target-update`. When the server receives an `unban` update, it must react as follows:
+
+1. The `target` is removed from the `blacklist` set.
 1. The update is sent back to the user.
 
 #### 7.8 Pause (shirakumo-pause)
@@ -403,6 +417,37 @@ A new update called `unquiet` is introduced. It is a `target-update` and a `chan
 
 1. The target user is removed from the "quiet list" of the channel.
 1. The update is sent back to the user.
+
+#### 7.10 IP (shirakumo-ip)
+Purpose: exposes IP address information and allows management of IPs.
+
+Connections now have an additional property, the `ip`, which must be an IPv6 address. If the connection is established over IPv4, the `ip` should nevertheless be the IPv6 representation of this address.
+
+The server has an additional property, an `ip-blacklist`, which is a set of IP addresses and masks as described below.
+
+§4.1 is modified to include the following step before all others:
+
+1. If the IP address the connection is coming from matches one from the `ip-blacklist`, the connection is immediately dropped.
+
+An IP address `a` is considered the "same" as an IP address `b` under the mask `m`, if the bitwise AND of `a`, `b` and `m` together yields a non-zero value. The purpose of the mask is to allow addressing entire subnets.
+
+A new update called `ip-ban` is introduced. It holds the required field `ip` and the optional field `mask`. If `mask` is not given, it should be assumed to be an IP address that is all 1s. When the server receives an `ip-ban` update, it must react as follows:
+
+1. Scan through the existing `ip-blacklist` and for each:
+   1. if the IP matches `ip` under `mask`:
+      1. if the mask has more or equal low zeroes (is thus more or as general) than `mask`, the update is dropped
+      1. otherwise the entry is removed.
+1. The entry of `ip` and `mask` is added to the blacklist.
+1. The update is sent back to the user.
+
+A new update called `ip-unban` is introduced. It holds the same fields as `ip-ban`. When the server receives an `ip-unban` update, it must react as follows:
+
+1. Scan through the existing `ip-blacklist` and for each:
+   1. if the IP matches `ip` under `mask`:
+      1. if the mask has more or equal low zeroes as `mask`, the entry is removed.
+1. The update is sent back to the user.
+
+FIXME: Include user-info ip list, but how to determine when it is safe to send that?
 
 ## See Also
 
