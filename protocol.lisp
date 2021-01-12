@@ -168,7 +168,7 @@
 (define-protocol-class update (wire-object)
   ((id :initarg :id :accessor id :slot-type id)
    (clock :initarg :clock :accessor clock :slot-type integer)
-   (from :initarg :from :accessor from :slot-type username))
+   (from :initarg :from :accessor from :slot-type (or null username)))
   (:default-initargs
    :id (next-id)
    :clock (get-universal-time)
