@@ -431,8 +431,9 @@ The server has an additional property, an `ip-blacklist`, which is a set of IP a
 
 An IP address `a` is considered the "same" as an IP address `b` under the mask `m`, if the bitwise AND of `a` and `b` with the bitwise inversion of `m` equals the same (`a & !m == b & !m`). The purpose of the mask is to allow addressing entire subnets.
 
-A new update called `ip-ban` is introduced. It holds the required field `ip` and the optional field `mask`. If `mask` is not given, it should be assumed to be an IP address that is all 1s. When the server receives an `ip-ban` update, it must react as follows:
+A new update called `ip-ban` is introduced. It holds the required field `ip` and the optional field `mask`. If `mask` is not given, it should be assumed to be an IP address that is all 1s. Both the `ip` and `mask` field must be strings in either IPv4 or IPv6 format. When the server receives an `ip-ban` update, it must react as follows:
 
+1. If either `ip` or `mask` do not designate IPv4 or IPv6 addresses, a `bad-ip-format` failure is sent and the update is dropped.
 1. Scan through the existing `ip-blacklist` and for each:
    1. if the IP matches `ip` under `mask`:
       1. if the mask is greater (thus more general) than `mask`, the update is dropped

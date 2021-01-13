@@ -118,6 +118,10 @@
    #:key
    #:kill
    #:destroy
+   #:ban
+   #:unban
+   #:ip-ban
+   #:ip-unban
    #:pause
    #:by
    #:quiet
@@ -151,7 +155,8 @@
    #:no-such-parent-channel
    #:no-such-channel-info
    #:malformed-channel-info
-   #:clock-skewed)
+   #:clock-skewed
+   #:bad-ip-format)
   ;; reader.lisp
   (:export
    #:whitespace-p

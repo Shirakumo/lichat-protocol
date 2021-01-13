@@ -440,3 +440,7 @@
 (define-protocol-class clock-skewed (update-failure)
   ()
   (:default-initargs :text "Your clock is out of sync. You should synchronise with a time server."))
+
+(define-protocol-class bad-ip-format (update-failure)
+  ()
+  (:default-initargs :text "The IP address was not in the correct format."))
