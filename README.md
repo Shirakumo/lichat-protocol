@@ -429,22 +429,23 @@ The server has an additional property, an `ip-blacklist`, which is a set of IP a
 
 1. If the IP address the connection is coming from matches one from the `ip-blacklist`, the connection is immediately dropped.
 
-An IP address `a` is considered the "same" as an IP address `b` under the mask `m`, if the bitwise AND of `a`, `b` and `m` together yields a non-zero value. The purpose of the mask is to allow addressing entire subnets.
+An IP address `a` is considered the "same" as an IP address `b` under the mask `m`, if the bitwise AND of `a`, `b`, and the bitwise inversion of `m` together yields a non-zero value (`a & b & !m`). The purpose of the mask is to allow addressing entire subnets.
 
 A new update called `ip-ban` is introduced. It holds the required field `ip` and the optional field `mask`. If `mask` is not given, it should be assumed to be an IP address that is all 1s. When the server receives an `ip-ban` update, it must react as follows:
 
 1. Scan through the existing `ip-blacklist` and for each:
    1. if the IP matches `ip` under `mask`:
-      1. if the mask has more or equal low zeroes (is thus more or as general) than `mask`, the update is dropped
+      1. if the mask is greater (thus more general) than `mask`, the update is dropped
       1. otherwise the entry is removed.
 1. The entry of `ip` and `mask` is added to the blacklist.
+1. Any connection matching the new entry is dropped.
 1. The update is sent back to the user.
 
 A new update called `ip-unban` is introduced. It holds the same fields as `ip-ban`. When the server receives an `ip-unban` update, it must react as follows:
 
 1. Scan through the existing `ip-blacklist` and for each:
    1. if the IP matches `ip` under `mask`:
-      1. if the mask has more or equal low zeroes as `mask`, the entry is removed.
+      1. if the mask is greater than or equal to `mask`, the entry is removed.
 1. The update is sent back to the user.
 
 FIXME: Include user-info ip list, but how to determine when it is safe to send that?
