@@ -300,6 +300,20 @@
 (define-protocol-class destroy (channel-update)
   ())
 
+(define-protocol-class ban (target-update)
+  ())
+
+(define-protocol-class unban (target-update)
+  ())
+
+(define-protocol-class ip-ban ()
+  ((ip :initarg :ip :accessor ip :slot-type string)
+   (mask :initarg :mask :accessor mask :slot-type string)))
+
+(define-protocol-class ip-unban ()
+  ((ip :initarg :ip :accessor ip :slot-type string)
+   (mask :initarg :mask :accessor mask :slot-type string)))
+
 (define-protocol-class pause (channel-update)
   ((by :initarg :by :accessor by :slot-type (integer 0))))
 
