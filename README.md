@@ -450,6 +450,25 @@ A new update called `ip-unban` is introduced. It holds the same fields as `ip-ba
 
 FIXME: Include user-info ip list, but how to determine when it is safe to send that?
 
+#### 7.11 Bridge (shirakumo-bridge)
+Purpose: allows bridging chat channels from external services by sending messages on behalf of other users.
+
+A new, optional field `bridge` is added to all `channel-update`s. Channel objects have a new property, a "bridge list". Handling of any `channel-update` is modified as follows, after the check of §5.1.6 (`channel` existence check):
+
+1. If the `bridge` field is set:
+   1. If the user is not on the channel's "bridge list", an `insufficient-permissions` failure is sent back and the update is dropped.
+   1. If the user is not in the channel, a `not-in-channel` failure is sent back and the update is dropped.
+   1. The values of the `bridge` and `from` fields are swapped.
+   1. If the update would be delivered to all members of the channel ignoring all validity checks (it is not an update made for side-effects), then the update is sent to all members of the channel.
+   1. The update is dropped.
+
+A new update called `bridge` is introduced. It is a `channel-update`. When the server receives a `bridge` update, it must react as follows:
+
+1. The user is put onto the channel's "bridge list".
+1. The update is sent back to the user.
+
+Should the user `leave` the channel, the user is removed from the channel's "bridge list".
+
 ## See Also
 
 * [lichat-serverlib](https://shirakumo.github.io/lichat-serverlib) An agnostic implementation of the server-side protocol.
