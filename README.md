@@ -429,7 +429,7 @@ The server has an additional property, an `ip-blacklist`, which is a set of IP a
 
 1. If the IP address the connection is coming from matches one from the `ip-blacklist`, the connection is immediately dropped.
 
-An IP address `a` is considered the "same" as an IP address `b` under the mask `m`, if the bitwise AND of `a`, `b`, and the bitwise inversion of `m` together yields a non-zero value (`a & b & !m`). The purpose of the mask is to allow addressing entire subnets.
+An IP address `a` is considered the "same" as an IP address `b` under the mask `m`, if the bitwise AND of `a` and `b` with the bitwise inversion of `m` equals the same (`a & !m == b & !m`). The purpose of the mask is to allow addressing entire subnets.
 
 A new update called `ip-ban` is introduced. It holds the required field `ip` and the optional field `mask`. If `mask` is not given, it should be assumed to be an IP address that is all 1s. When the server receives an `ip-ban` update, it must react as follows:
 
