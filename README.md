@@ -310,7 +310,7 @@ Generally for a `channel-update`, the following terminology is introduced: the `
 
 A new error `no-such-parent-channel` is introduced. It is an `update-failure`.
 
-§5.3 is modified as follows: instead of point `1`: The update is checked for permissions by the parent channel. After point `2`: If the parent channel does not exist, the server responds with a `no-such-parent-channel` update and drops the request.
+§5.3.1 is modified as follows: instead of point `1`: If the parent channel does not exist, the server responds with a `no-such-parent-channel` update and drops the request. If the parent channel exists, the update is checked for permissions by the parent channel.
 
 §5.5.1 is modified as follows: the `channels` update is upgraded to a `channel-update` and as such contains a `channel` field. When processing the `channels` update, the server should only process channels whose names begin with the name mentioned in the `channel` field followed by a forward slash and do not contain any further forward slashes.
 
@@ -318,7 +318,7 @@ Specifically, an update requesting ``foo`` should list ``foo/bar``, but not ``fo
 
 Clients that support this extension are required to implement the following special semantic: if a user uses a command that requires a channel name, and the user begins the channel name with a forward slash, the client should automatically prepend the current channel name to the specified channel name, if there is a channel that is considered "current". If no channel is explicitly current, the primary channel is considered current.
 
-#### 7.6 Channel Data (shirakumo-channel-info)
+#### 7.6 Channel Info (shirakumo-channel-info)
 Purpose: allows associating metadata with channels such as the set of rules, a topic, and so forth.
 
 Channels receive extra metadata fields that can be set set by users. To this end, channels must keep a table of `metadata` to track. The server must restrict the valid keys in that table, and may restrict the length of values associated with each key. The following keys must always be available, with the specified intended purposes:
@@ -469,6 +469,15 @@ A new update called `bridge` is introduced. It is a `channel-update`. When the s
 1. The update is sent back to the user.
 
 Should the user `leave` the channel, the user is removed from the channel's "bridge list".
+
+#### 7.12 Link (shirakumo-link)
+Purpose: allows storing data server-side to deliver it in a more efficient out-of-band fashion.
+
+#### 7.13 Markup (shirakumo-markup)
+Purpose: allows using different markup languages to stylise the text in `text-update`s.
+
+#### 7.14 User Info (shirakumo-user-info)
+Purpose: allows associating additional information with registered user accounts.
 
 ## See Also
 
