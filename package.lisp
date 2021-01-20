@@ -65,6 +65,9 @@
    #:user
    #:channel
    #:permissions
+   #:grant
+   #:update
+   #:deny
    #:lifetime
    #:users
    #:wire-object

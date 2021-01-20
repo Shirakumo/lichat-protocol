@@ -170,6 +170,22 @@ The channel's permissions can be viewed or changed with the `permissions` update
 
 See §2.5 for an explanation of the proper syntax of the permissions. Note that the server may reduce the set of rules to a simpler set that is semantically equivalent.
 
+As a shortcut, permissions can also be managed with the `grant` and `deny` updates, which change an individual rule. When a server receives a `grant` update, it must update the corresponding rule as follows:
+
+1. If the rule is `T`, nothing is done.
+1. If the rule is `NIL`, it is changed to `(+ user)`.
+1. If the rule is an exclusion mask, `user` is removed from the mask.
+1. If the rule is an inclusion mask, `user` is added to the mask if they are not already on it.
+
+When the server receives a `deny` update, it must update the corresponding rule as follows:
+
+1. If the rule is `T`, it is changed to `(- user)`.
+1. If the rule is `NIL`, nothing is done.
+1. If the rule is an exclusion mask, `user` is added to the mask if they are not already on it.
+1. If the rule is an inclusion mask, `user` is removed from the mask.
+
+After processing either a `grant` or `deny` update successfully, the update is sent back to the user.
+
 #### 5.4 Channel Interaction
 A user can interact with a channel in several ways. 
 

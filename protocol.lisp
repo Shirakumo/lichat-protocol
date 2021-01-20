@@ -249,6 +249,12 @@
   ((permissions :initarg :permissions :accessor permissions :slot-type list))
   (:default-initargs :permissions NIL))
 
+(define-protocol-class grant (channel-update target-update)
+  ((update :initarg :update :accessor update :slot-type symbol)))
+
+(define-protocol-class deny (channel-update target-update)
+  ((update :initarg :update :accessor update :slot-type symbol)))
+
 (define-protocol-class message (channel-update text-update)
   ())
 
