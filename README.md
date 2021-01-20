@@ -411,6 +411,10 @@ Channels have a new property, a "pause", as well as a "last update list". Delive
 
 The "pause" is noted in seconds and has a default value of 0. The "last update list" has a default timestamp of 0 for users without an entry.
 
+§5.4.1 (joining of a channel) is modified by adding the following extra step at the end:
+
+1. If the channel's "pause" property is greater than zero, a `pause` update is sent to the user with the `by` field set to the "pause" time.
+
 A new update called `pause` is introduced. It is a `channel-update` and has an additional field called `by`, which must contain an integer in the range [0,infinity[. When the server receives a `pause` update, it must react as follows:
 
 1. The channel's "pause" is set to "by".
