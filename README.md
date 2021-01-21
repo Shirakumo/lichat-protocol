@@ -469,8 +469,6 @@ A new update called `ip-unban` is introduced. It holds the same fields as `ip-ba
       1. if the mask is greater than or equal to `mask`, the entry is removed.
 1. The update is sent back to the user.
 
-FIXME: Include user-info ip list, but how to determine when it is safe to send that?
-
 #### 7.11 Bridge (shirakumo-bridge)
 Purpose: allows bridging chat channels from external services by sending messages on behalf of other users.
 
@@ -498,6 +496,12 @@ Purpose: allows using different markup languages to stylise the text in `text-up
 
 #### 7.14 User Info (shirakumo-user-info)
 Purpose: allows associating additional information with registered user accounts.
+
+#### 7.15 Shared Identity (shirakumo-shared-identity)
+Purpose: allows creating tokens that let other users post updates on behalf of another (registered) user account.
+
+FIXME: Add server-info command to request internal information on users
+FIXME: Add capabilities command to request which updates are permitted in channel
 
 ## See Also
 
