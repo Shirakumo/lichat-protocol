@@ -244,10 +244,17 @@ The list of users currently in a channel can be retrieved by the `users` update,
 1. A `users` update with the same `id` as the request is sent back with the `users` field set to the list of names of users that were recorded.
 
 ##### 5.5.3 Requesting Information About a User
-Finally, information about a particular user can be retrieved by the `user-info` update, after which the server acts as follows:
+Information about a particular user can be retrieved by the `user-info` update, after which the server acts as follows:
 
 1. If the user is not connected and no profile for the user exists, a `no-such-user` update is sent back and the request is dropped.
 1. A `user-info` update with the same `id` as the request is sent back with the `connections` field set to the number of connections the user object has associated with it and with the `registered` field set to `T` if the user has a profile associated with it.
+
+##### 5.5.4 Requesting Capabilities
+A user can request a list of updates they are allowed to send to a particular channel using the `capabilities` update. The server must act as follows:
+
+1. If the user is not in the named channel, a `not-in-channel` update is sent back and the request is dropped.
+1. For every update type known to the server, the server checks whether the user is permitted according to the channel's permission rule for the update. If permitted, the update type is added to a list.
+1. A `capabilities` update with the same `id` as the request is sent back with the `permitted` field set to the list of updates gathered in step 2.
 
 ### 6. Protocol Extension
 A server or client may provide extensions to the protocol in the following manners:
@@ -501,7 +508,6 @@ Purpose: allows associating additional information with registered user accounts
 Purpose: allows creating tokens that let other users post updates on behalf of another (registered) user account.
 
 FIXME: Add server-info command to request internal information on users
-FIXME: Add capabilities command to request which updates are permitted in channel
 
 ## See Also
 

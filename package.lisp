@@ -103,6 +103,8 @@
    #:user-info
    #:registered
    #:connections
+   #:capabilities
+   #:permitted
    #:backfill
    #:data
    #:content-type

@@ -271,6 +271,10 @@
    (connections :initarg :connections :accessor connections :slot-type (integer 1)))
   (:default-initargs :registered NIL :connections 1))
 
+(define-protocol-class capabilities (channel-update)
+  ((permitted :initarg :permitted :accessor permitted :slot-type list))
+  (:default-initargs :permitted ()))
+
 (define-protocol-class backfill (channel-update)
   ())
 
