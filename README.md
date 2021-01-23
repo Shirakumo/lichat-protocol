@@ -260,10 +260,11 @@ A user can request a list of updates they are allowed to send to a particular ch
 A server or client may provide extensions to the protocol in the following manners:
 
 * **Additional Update Types** -- If such an update is sent to a client that does not recognise it, it should be ignored. If such an update is sent to a server that does not recognise it, the server will respond with an `invalid-update`.
-* **Additional Update Fields** -- A client or server may extend the existing update classes with additional, optional fields to provide further information or other kinds of behaviour. The server or client is not allowed to introduce additional required fields. When an update with unknown initargs is received, the unknown initargs are to be ignored.
+* **Additional Update Fields** -- A client or server may extend the existing update classes with additional, optional fields to provide further information or other kinds of behaviour. The server or client is not allowed to introduce additional required fields. When an update with unknown initargs is received, the unknown initargs are to be ignored. An extension may only add existing, well-specified initargs in keyword form (`:text`, `:channel`, `:target`, `:update-id`). Other additional initargs must be symbols from an extension-owned package.
 * **Additional Constraints** -- An extension may introduce additional constraints and restrictions on whether existing updates are considered valid.
+* **Additional User Attributes** -- An extension may specify additional attributes stored in profiles and returned through `server-info`.
 
-Each extension to the protocol should receive a unique name of the form `producer-name` where `producer` is an identifier for who wrote up the extension's protocol, and `name` should be a name for the extension itself. For each extension that a server and client support, they must include the unique name of it as a string in the `connect` update's `extensions` list.
+Each extension to the protocol should receive a unique name of the form `producer-name` where `producer` is an identifier for who wrote up the extension's protocol, and `name` should be a name for the extension itself. For each extension that a server and client support, they must include the unique name of it as a string in the `connect` update's `extensions` list. Each producer also owns a symbol package with the producer's name, in which they may freely specify new symbols.
 
 ### 7. Protocol Extensions
 The extensions outlined in this section are not mandatory and a server or client may choose not to implement them.
