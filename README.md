@@ -256,6 +256,17 @@ A user can request a list of updates they are allowed to send to a particular ch
 1. For every update type known to the server, the server checks whether the user is permitted according to the channel's permission rule for the update. If permitted, the update type is added to a list.
 1. A `capabilities` update with the same `id` as the request is sent back with the `permitted` field set to the list of updates gathered in step 2.
 
+##### 5.5.5 Requesting Private Information
+Servers may store additional information about a user, such as statistics, IP addresses, and so forth. Such information can be requested through the `server-info` update. After receiving such an update, the server must act as follows:
+
+1. If the user is not connected and no profile for the user exists, a `no-such-user` update is sent back and the request is dropped.
+1. A `server-info` update with the same `id` as the request is sent back with the `attributes` field set to an "association list", and the `connections` field set to a list of "association lists", one such "association list" per connection the user has. An association list is a list where each element has the following structure:
+   - `(SYMBOL EXPR)`, where:
+   - `SYMBOL` is a symbol naming the attribute that is being returned.
+   - `EXPR` is the value for the attribute being returned.
+
+The attributes being returned are dependent on the server and the supported protocol extensions. The set of returned attributes may also differ depending on the user being requested, especially if the user is the server's user.
+
 ### 6. Protocol Extension
 A server or client may provide extensions to the protocol in the following manners:
 
@@ -477,6 +488,8 @@ A new update called `ip-unban` is introduced. It holds the same fields as `ip-ba
       1. if the mask is greater than or equal to `mask`, the entry is removed.
 1. The update is sent back to the user.
 
+A new connection attribute called `shirakumo:ip` is introduced, which is a string showing the IP address from which the connection originates.
+
 #### 7.11 Bridge (shirakumo-bridge)
 Purpose: allows bridging chat channels from external services by sending messages on behalf of other users.
 
@@ -507,8 +520,6 @@ Purpose: allows associating additional information with registered user accounts
 
 #### 7.15 Shared Identity (shirakumo-shared-identity)
 Purpose: allows creating tokens that let other users post updates on behalf of another (registered) user account.
-
-FIXME: Add server-info command to request internal information on users
 
 ## See Also
 

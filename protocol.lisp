@@ -275,6 +275,11 @@
   ((permitted :initarg :permitted :accessor permitted :slot-type list))
   (:default-initargs :permitted ()))
 
+(define-protocol-class server-info (target-update)
+  ((attributes :initarg :attributes :accessor attributes :slot-type list)
+   (connections :initarg :connections :accessor connections :slot-type list))
+  (:default-initargs :attributes () :connections ()))
+
 (define-protocol-class backfill (channel-update)
   ())
 

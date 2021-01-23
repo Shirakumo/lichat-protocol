@@ -105,6 +105,8 @@
    #:connections
    #:capabilities
    #:permitted
+   #:server-info
+   #:attributes
    #:backfill
    #:data
    #:content-type
