@@ -525,6 +525,20 @@ Should the user `leave` the channel, the user is removed from the channel's "bri
 #### 7.12 Link (shirakumo-link)
 Purpose: allows storing data server-side to deliver it in a more efficient out-of-band fashion.
 
+Clients and servers implementing this extension must also implement the `shirakumo-data` extension.
+
+A new update called `link` is introduced. It is a `data` update. Unlike the `data` update however, its `payload` field contains a URL in string form.
+
+When the server receives a `data` update, it must instead of §7.2.3 (distributing the update) act as follows:
+
+1. The data payload is saved somewhere, such that it is publicly accessible through an HTTP or HTTPS URL.
+1. The `data` update is converted into a `link` update, with the `payload` field set to the public URL.
+1. The new `link` update is distributed to the users of the channel.
+
+The server may opt to make saved data payloads inaccessible after a time. The server should take care to generate URLs for the data payloads that are not guessable, which is to say a user cannot reliably generate URLs to access a payload. The server must serve the payload with the requested `content-type` set, and the `content-disposition` header set to include the requested filename in the update.
+
+When the client receives a `link` update, it must, as far as possible, embed the linked payload to display it directly. If it cannot display the payload directly, it may instead display the URL to which the link points.
+
 #### 7.13 Markup (shirakumo-markup)
 Purpose: allows using different markup languages to stylise the text in `text-update`s.
 
