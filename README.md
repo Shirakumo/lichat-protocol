@@ -528,6 +528,21 @@ Purpose: allows storing data server-side to deliver it in a more efficient out-o
 #### 7.13 Markup (shirakumo-markup)
 Purpose: allows using different markup languages to stylise the text in `text-update`s.
 
+`text-update`s all receive the following additional fields:
+
+- `shirakumo:rich` A `string` containing a version of the text with markup information included. The `text` field must be set to the same text as this field, but with all markup information stripped away.
+- `shirakumo:markup` A `string` identifying the markup that is used in the rich text.
+
+When a client receives a `text-update` it should check the `shirakumo:markup` field and determine whether it supports rendering the given format. If it is supported, the client should render the text according to the `shirakumo:rich` contents instead of the `text` contents. The client may ignore parts of the rich text if it considers the markup unsuitable. If the markup contains errors, the client must fall back to displaying the unformatted `text` instead.
+
+The following markup formats are officially recognised, though others may be used:
+
+- `html` HTML5 content
+- `markless` [Markless](https://shirakumo.github.io/markless)
+- `markdown` [Markdown](https://daringfireball.net/projects/markdown/syntax)
+- `org` [org-mode](https://orgmode.org)
+- `rest` [reStructuredText](https://docutils.readthedocs.io/en/sphinx-docs/user/rst/quickstart.html)
+
 #### 7.14 User Info (shirakumo-user-info)
 Purpose: allows associating additional information with registered user accounts.
 
