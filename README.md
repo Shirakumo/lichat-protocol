@@ -267,6 +267,17 @@ Servers may store additional information about a user, such as statistics, IP ad
 
 The attributes being returned are dependent on the server and the supported protocol extensions. The set of returned attributes may also differ depending on the user being requested, especially if the user is the server's user.
 
+The following attributes are specified:
+
+- `channels` A list of channel names in which the user resides.
+- `registered-on` When the user registered their profile. `NIL` if they did not.
+
+The following connection attributes are specified:
+
+- `connected-on` The time at which the connection was initiated.
+
+While these attributes are specified in their purpose, a server does not have to return them.
+
 ### 6. Protocol Extension
 A server or client may provide extensions to the protocol in the following manners:
 
@@ -281,7 +292,9 @@ Each extension to the protocol should receive a unique name of the form `produce
 The extensions outlined in this section are not mandatory and a server or client may choose not to implement them.
 
 #### 7.1 Backfill (shirakumo-backfill)
-Purpose: allow users to catch up with the contents of a channel should they initiate a new connection which does not currently have access to all the past updates of the channel. In order to facilitate this, the server is forced to keep copies of the updates. The server is allowed to only keep updates for a certain duration, or only a certain number of total updates. In order to avoid spying, the server must not distribute updates that the user did not already receive previously through another connection. The server does not have to make any guarantee about the order in which the updates are sent back to the connection. The client on the other side is responsible for ordering them as appropriate according to the clock.
+Purpose: allow users to catch up with the contents of a channel should they initiate a new connection which does not currently have access to all the past updates of the channel. 
+
+In order to facilitate this, the server is forced to keep copies of the updates. The server is allowed to only keep updates for a certain duration, or only a certain number of total updates. In order to avoid spying, the server must not distribute updates that the user did not already receive previously through another connection. The server does not have to make any guarantee about the order in which the updates are sent back to the connection. The client on the other side is responsible for ordering them as appropriate according to the clock.
 
 A new update type called `backfill` is introduced, which is a `channel-update`. If the server receives such an update from a connection, it reacts as follows:
 
