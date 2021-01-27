@@ -373,7 +373,7 @@ Clients that support this extension are required to implement the following spec
 #### 7.6 Channel Info (shirakumo-channel-info)
 Purpose: allows associating metadata with channels such as the set of rules, a topic, and so forth.
 
-Channels receive extra metadata fields that can be set set by users. To this end, channels must keep a table of `metadata` to track. The server must restrict the valid keys in that table, and may restrict the length of values associated with each key. The following keys must always be available, with the specified intended purposes:
+Channels receive extra metadata fields that can be set set by users. To this end, channels must keep a table of `metadata` to track. The server must restrict the valid keys in that table, and may restrict the content of values associated with each key. The following keys must always be available, with the specified intended purposes:
 
 - `:news` Updates and latest news by channel administrators
 - `:topic` A description of the general discussion topic of the channel
@@ -382,7 +382,7 @@ Channels receive extra metadata fields that can be set set by users. To this end
 
 A new update called `channel-info` is introduced. It is a `channel-update` and holds a `keys` field that can either be `T` or a list of keys as symbols describing the info to fetch.
 
-A new update called `set-channel-info` is introduced. It is a `channel-update` and holds a `key` field that must be a symbol describing the info to set, as well as a `text` field, which must be a string describing the contents to be associated with the key.
+A new update called `set-channel-info` is introduced. It is a `channel-update` and a `text-update`, and holds a `key` field that must be a symbol describing the info to set.
 
 A new error `no-such-channel-info` is introduced. It is an `update-failure` and contains the additional field `key`, which must hold a symbol.
 
@@ -564,8 +564,65 @@ The following markup formats are officially recognised, though others may be use
 #### 7.14 User Info (shirakumo-user-info)
 Purpose: allows associating additional information with registered user accounts.
 
+Profiles receive extra metadata fields that can be set set by users. To this end, profiles must keep a table of `metadata` to track. The server must restrict the valid keys in that table, and may restrict the content of values associated with each key. The following keys must always be available, with the specified intended purposes:
+
+- `:birthday` A textual description of the user's birthday.
+- `:contact` Other contact methods, typically email addresses.
+- `:location` A textual description of the user's real-world location.
+- `:public-key` A PGP public key.
+- `:real-name` The user's real-life name.
+
+The `user-info` update is changed to now hold an optional `shirakumo:keys` field that can either be `T` or a list of keys as symbols describing the info to fetch.
+
+A new update called `set-user-info` is introduced it is a `text-update`. It holds a `key` field that must be a symbol describing the info to set.
+
+A new error `no-such-user-info` is introduced. It is an `update-failure` and contains the additional field `key`, which must hold a symbol.
+
+A new error `malformed-user-info` is introduced. It is an `update-failure`.
+
+When the server receives a `user-info` update, it must react as follows, in addition to the standard behaviour described in §5.5.3:
+
+1. If the `keys` field is set, for each of the requested keys, the server reacts as follows:
+  1. If the key does not exist, the server replies with a `no-such-user-info` failure with the according `key` set, and the `id` set to the `id` of the original update.
+  1. Otherwise, the server replies with a `set-user-info` update with the same `id` as the request, `key` set to the current key being requested, `text` being set to the key's value, and `from` being set to the target of the original `user-info` update.
+
+When the server receives a `set-user-info` update, it must react as follows:
+
+1. If the specified `key` is not accepted by the server, it replies with a `no-such-user-info` error and drops the update.
+1. If the specified `text` is not of the correct format for the given `key`, it replies with a `malformed-user-info` error and drops the update.
+1. The internal user metadata is updated to associate the given `key` with the given `text`.
+1. The `set-user-info` update is sent back.
+
 #### 7.15 Shared Identity (shirakumo-shared-identity)
 Purpose: allows creating tokens that let other users post updates on behalf of another (registered) user account.
+
+Users now have an additional field, a "map of shares", which is a map associating keys (strings of at least 16 characters in length) to connections.
+
+§5.1.5 (`from` field check) is modified as follows:
+
+1. If the connection the update is originating from has an entry in the user's map of shares targeted with the `from` field, the `from` field check is elided.
+
+A new update called `share-identity` is introduced. When the server receives a `share-identity` update, it must react as follows:
+
+1. A new random key is generated and associated with `nil` in the user's map of shares.
+1. The update is sent back with the `key` field set to the newly generated key.
+
+A new update called `unshare-identity` is introduced. When the server receives an `unshare-identity` update, it must react as follows:
+
+1. If the `key` is not set, the user's map of shares is emptied.
+1. Otherwise, the entry corresponding to the `key` is removed from the user's map of shares.
+1. The update is sent back.
+
+A new update called `list-shared-identities` is introduced. When the server receives a `list-shared-identities` update, it must react as follows:
+
+1. For every entry in the user's map of shares, the server gather's the key, as well as the name of the user the associated connection is from (or `nil` if the key is not associated yet) into a list.
+1. The update is sent back, with the `identities` field set to the gathered list.
+
+A new update called `assume-identity` is introduced. It is a `target-update`. When the server receives an `assume-identity` update, it must react as follows:
+
+1. If the `key` in the update is either not in the target user's map of shares, or the key is not associated with `nil`, a `identity-already-used` failure is sent back and the update is dropped.
+1. The connection the update is coming from is associated with the `key` in the target user's map of shares.
+1. The update is sent back to the originating connection.
 
 ## See Also
 

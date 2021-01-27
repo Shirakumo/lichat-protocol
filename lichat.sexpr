@@ -69,3 +69,4 @@
 (define-object invalid-permissions (update-failure))
 (define-object no-such-user (update-failure))
 (define-object too-many-updates (update-failure))
+(define-object clock-skewed (update-failure))
