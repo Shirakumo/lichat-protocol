@@ -24,10 +24,14 @@ ANY      ::= !NULL
 See `to-wire`, `from-wire`.
 
 #### 1.1 Symbols
-Special care must be taken when reading and printing symbols. Symbols that come from the `lichat-protocol` package must be printed without the package name prefix. Symbols from the `keyword` package must be printed by their name only prefixed by a `:`. Every other symbol must be prefixed by the symbol's package's name followed by a `:`. When a symbol is read, it is checked whether it exists in the corresponding package laid out by the previous rules. If it does not exist, the expression is not valid and an error must be generated, but only after the expression has been read to completion. The package and symbol names are case-insensitive. By convention they are transformed to all-uppercase.
+A symbol is an object with a "name" that is home to a "package". A "package" is a simple collection of symbols. Symbols are uniquely identified by their name and package, and no two symbols with the same name may exist in the same package. The package and symbol names are case-insensitive, and two names are considered the same if they match after both have been transformed to lower case.
+
+This protocol specifies two core packages: `lichat` and `keyword`. Symbols that come from the `lichat` package must be printed without the package name prefix. Symbols from the `keyword` package must be printed by their name only prefixed by a `:`. Every other symbol must be prefixed by the symbol's package's name followed by a `:`. 
+
+When a symbol is read, it is checked whether it exists in the corresponding package laid out by the previous rules. If it does not exist, it may be substituted for a placeholder symbol. Servers must take special care not to keep symbol objects they don't know around, to avoid letting clients overload the server's memory with inexistent symbols.
 
 #### 1.2 Objects
-Only Common Lisp objects of type `wireable` can be serialised to the wire format. Special care must also be taken when `wire-object`s are read from the wire. An error must be generated if the object is malformed by either a non-symbol in the first place of its list, imbalanced key/value pairs in the tail, or non-keywords in the key position. An error must also be generated if the symbol at the first position does not name a class that is a subclass of `wire-object`. If it is a subclass of `update`, the keys (and values) named `:id` and `:clock` must also be present, lest an error be generated.
+Special care must be taken when `object`s are read from the wire. An error must be generated if the object is malformed by either a non-symbol in the first place of its list, imbalanced key/value pairs in the tail, or non-keywords in the key position. An error must also be generated if the symbol at the first position does not name a class that is a subclass of `update`.
 
 #### 1.3 Null Characters
 Null characters (`U+0000`) must not appear anywhere within a wireable. If a string were to contain null characters, they must be filtered out. If a symbol were to contain null characters, the message may not be put to the wire.
