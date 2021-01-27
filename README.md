@@ -571,6 +571,7 @@ Profiles receive extra metadata fields that can be set set by users. To this end
 - `:location` A textual description of the user's real-world location.
 - `:public-key` A PGP public key.
 - `:real-name` The user's real-life name.
+- `:status` May be `"away"`, or some arbitrary status description.
 
 The `user-info` update is changed to now hold an optional `shirakumo:keys` field that can either be `T` or a list of keys as symbols describing the info to fetch.
 
@@ -623,6 +624,17 @@ A new update called `assume-identity` is introduced. It is a `target-update`. Wh
 1. If the `key` in the update is either not in the target user's map of shares, or the key is not associated with `nil`, a `identity-already-used` failure is sent back and the update is dropped.
 1. The connection the update is coming from is associated with the `key` in the target user's map of shares.
 1. The update is sent back to the originating connection.
+
+#### 7.16 Icons (shirakumo-icons)
+Purpose: allows associating icons with channels and users.
+
+This extension requires the `shirakumo-channel-info` or `shirakumo-user-info` extensions.
+
+For channels and users, a new key type is introduced:
+
+- `:icon` The value of which must be a base64 encoded image file, with the content type prefixed like so: `content-type base64`.
+
+The server may reject images that are too large in dimension, or have a bad content-type. The server must in the very least support `image/png` and `image/gif` as content-types.
 
 ## See Also
 
