@@ -303,7 +303,7 @@
 
 (define-protocol-class channel-info (channel-update)
   ((keys :initarg :keys :accessor keys :slot-type (or list T)))
-  (:default-initargs :keys T :text NIL))
+  (:default-initargs :keys T))
 
 (define-protocol-class set-channel-info (channel-update)
   ((key :initarg :key :accessor key :slot-type symbol)

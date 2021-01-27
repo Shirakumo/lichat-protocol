@@ -510,12 +510,12 @@ A new connection attribute called `shirakumo:ip` is introduced, which is a strin
 #### 7.11 Bridge (shirakumo-bridge)
 Purpose: allows bridging chat channels from external services by sending messages on behalf of other users.
 
-A new, optional field `bridge` is added to all `channel-update`s. Channel objects have a new property, a "bridge list". Handling of any `channel-update` is modified as follows, after the check of §5.1.6 (`channel` existence check):
+A new, optional field `shirakumo:bridge` is added to all `channel-update`s. Channel objects have a new property, a "bridge list". Handling of any `channel-update` is modified as follows, after the check of §5.1.6 (`channel` existence check):
 
-1. If the `bridge` field is set:
+1. If the `shirakumo:bridge` field is set:
    1. If the user is not on the channel's "bridge list", an `insufficient-permissions` failure is sent back and the update is dropped.
    1. If the user is not in the channel, a `not-in-channel` failure is sent back and the update is dropped.
-   1. The values of the `bridge` and `from` fields are swapped.
+   1. The values of the `shirakumo:bridge` and `from` fields are swapped.
    1. If the update would be delivered to all members of the channel ignoring all validity checks (it is not an update made for side-effects), then the update is sent to all members of the channel.
    1. The update is dropped.
 
