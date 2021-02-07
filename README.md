@@ -584,11 +584,13 @@ A new error `malformed-user-info` is introduced. It is an `update-failure`.
 When the server receives a `user-info` update, it must react as follows, in addition to the standard behaviour described in §5.5.3:
 
 1. If the `keys` field is set, for each of the requested keys, the server reacts as follows:
+  1. If the target user is not registered, this section is ignored.
   1. If the key does not exist, the server replies with a `no-such-user-info` failure with the according `key` set, and the `id` set to the `id` of the original update.
   1. Otherwise, the server replies with a `set-user-info` update with the same `id` as the request, `key` set to the current key being requested, `text` being set to the key's value, and `from` being set to the target of the original `user-info` update.
 
 When the server receives a `set-user-info` update, it must react as follows:
 
+1. If the target user is not registered, the server replies with a `no-such-profile` failure and drops the update.
 1. If the specified `key` is not accepted by the server, it replies with a `no-such-user-info` error and drops the update.
 1. If the specified `text` is not of the correct format for the given `key`, it replies with a `malformed-user-info` error and drops the update.
 1. The internal user metadata is updated to associate the given `key` with the given `text`.

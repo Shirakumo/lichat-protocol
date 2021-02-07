@@ -16,7 +16,7 @@
 (define-object shirakumo:set-channel-info (channel-update text-update)
   (:key symbol))
 (define-object shirakumo:kill (target-update))
-(define-object shirakumo:destroy (target-update))
+(define-object shirakumo:destroy (channel-update))
 (define-object shirakumo:ban (target-update))
 (define-object shirakumo:unban (target-update))
 (define-object shirakumo:ip-ban (update)
