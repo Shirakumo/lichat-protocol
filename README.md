@@ -573,9 +573,9 @@ Profiles receive extra metadata fields that can be set set by users. To this end
 - `:real-name` The user's real-life name.
 - `:status` May be `"away"`, or some arbitrary status description.
 
-The `user-info` update is changed to now hold an optional `shirakumo:keys` field that can either be `T` or a list of keys as symbols describing the info to fetch.
+The `user-info` update is changed to now hold an optional `shirakumo:info` field that is an association list.
 
-A new update called `set-user-info` is introduced it is a `text-update`. It holds a `key` field that must be a symbol describing the info to set.
+A new update called `set-user-info` is introduced. It is a `text-update`. It holds a `key` field that must be a symbol describing the info to set.
 
 A new error `no-such-user-info` is introduced. It is an `update-failure` and contains the additional field `key`, which must hold a symbol.
 
@@ -583,10 +583,9 @@ A new error `malformed-user-info` is introduced. It is an `update-failure`.
 
 When the server receives a `user-info` update, it must react as follows, in addition to the standard behaviour described in §5.5.3:
 
-1. If the `keys` field is set, for each of the requested keys, the server reacts as follows:
-  1. If the target user is not registered, this section is ignored.
-  1. If the key does not exist, the server replies with a `no-such-user-info` failure with the according `key` set, and the `id` set to the `id` of the original update.
-  1. Otherwise, the server replies with a `set-user-info` update with the same `id` as the request, `key` set to the current key being requested, `text` being set to the key's value, and `from` being set to the target of the original `user-info` update.
+1. If the target user is not registered, this section is ignored.
+1. For each user info key on the user's profile:
+   1. A list composed of the key and the value of the field are added to the `info` field of the `user-info` reply.
 
 When the server receives a `set-user-info` update, it must react as follows:
 

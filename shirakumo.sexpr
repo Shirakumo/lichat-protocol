@@ -50,7 +50,7 @@
   (shirakumo:rich string :optional)
   (shirakumo:markup string :optional))
 (define-extension user-info ()
-  (shirakumo:keys (or list T) :optional))
+  (shirakumo:info list :optional))
 
 (define-object shirakumo:bad-content-type (update-failure)
   (:allowed-content-types (list string)))
