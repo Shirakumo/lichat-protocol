@@ -637,6 +637,13 @@ For channels and users, a new key type is introduced:
 
 The server may reject images that are too large in dimension, or have a bad content-type. The server must in the very least support `image/png` and `image/gif` as content-types.
 
+### 8 General Conventions
+The following are general conventions for server and client implementors. However, they are not mandatory to follow, as they may only make sense for certain types of implementations.
+
+The default port when served over TCP should be `1111`, with `1112` being the default for SSL connections.
+
+When specified in URLs, Lichat takes the `lichat` protocol and follows this general scheme: `lichat://host:port/channel#id` Meaning the URL path (if given) is used as the name for a channel to join. The URL fragment can be used to specify a specific message id. Note that it is the client's responsibility to ensure that the ID is sufficiently unique so that the URL will link to the correct message. The query part of the URL may be used for client-specific purposes.
+
 ## See Also
 
 * [lichat-serverlib](https://shirakumo.github.io/lichat-serverlib) An agnostic implementation of the server-side protocol.
