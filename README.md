@@ -658,7 +658,7 @@ NULL     ::= U+0000
 
 This is equivalent to the standard wire format structure and the recommended way of printing, but enforces single space between tokens, no use of backslash escapes unless necessary, and forces a leading digit on numbers, essentially eliminating all ambiguities in the syntax. Additional constraints on printing the update's fields apply:
 
-- The fields must be printed by sorting them according to the lexicographic order of their keys.
+- The fields must be printed by sorting them according to their unicode codepoints, meaning order is determined by comparing each codepoint in two candidates in turn and sorting the lower codepoint to be before the higher codepoint.
 - The `signature` field must be omitted.
 - The `clock` and `from` fields must be present.
 
