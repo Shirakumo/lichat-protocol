@@ -510,16 +510,16 @@ A new connection attribute called `shirakumo:ip` is introduced, which is a strin
 #### 7.11 Bridge (shirakumo-bridge)
 Purpose: allows bridging chat channels from external services by sending messages on behalf of other users.
 
-A new, optional field `shirakumo:bridge` is added to all `channel-update`s. Handling of `channel-update`s is modified as follows, after the check of §5.1.6 (`channel` existence check):
+A new, optional field `:bridge` is added to all `channel-update`s. Handling of `channel-update`s is modified as follows, after the check of §5.1.6 (`channel` existence check):
 
-1. If the `shirakumo:bridge` field is set:
+1. If the `bridge` field is set:
    1. If the user is not in the channel, a `not-in-channel` failure is sent back and the update is dropped.
    1. If the user does not have the permission to send a `bridge` update in the channel, an `insufficient-permissions` failure is sent back and the update is dropped.
-   1. The values of the `shirakumo:bridge` and `from` fields are swapped.
+   1. The values of the `bridge` and `from` fields are swapped.
    1. If the update would be delivered to all members of the channel ignoring all validity checks (it is not an update made for side-effects), then the update is sent to all members of the channel.
    1. The update is dropped.
 
-The server may choose to discard the `shirakumo:bridge` field for any number of update types, but must in the very least support `message`.
+The server may choose to discard the `bridge` field for any number of update types, but must in the very least support `message`.
 
 A new update called `bridge` is introduced. It is a `channel-update`. When the server receives a `bridge` update, it must react as follows:
 
@@ -547,10 +547,10 @@ Purpose: allows using different markup languages to stylise the text in `text-up
 
 `text-update`s all receive the following additional fields:
 
-- `shirakumo:rich` A `string` containing a version of the text with markup information included. The `text` field must be set to the same text as this field, but with all markup information stripped away.
-- `shirakumo:markup` A `string` identifying the markup that is used in the rich text.
+- `rich` A `string` containing a version of the text with markup information included. The `text` field must be set to the same text as this field, but with all markup information stripped away.
+- `markup` A `string` identifying the markup that is used in the rich text.
 
-When a client receives a `text-update` it should check the `shirakumo:markup` field and determine whether it supports rendering the given format. If it is supported, the client should render the text according to the `shirakumo:rich` contents instead of the `text` contents. The client may ignore parts of the rich text if it considers the markup unsuitable. If the markup contains errors, the client must fall back to displaying the unformatted `text` instead.
+When a client receives a `text-update` it should check the `markup` field and determine whether it supports rendering the given format. If it is supported, the client should render the text according to the `rich` contents instead of the `text` contents. The client may ignore parts of the rich text if it considers the markup unsuitable. If the markup contains errors, the client must fall back to displaying the unformatted `text` instead.
 
 The following markup formats are officially recognised, though others may be used:
 
@@ -572,7 +572,7 @@ Profiles receive extra metadata fields that can be set set by users. To this end
 - `:real-name` The user's real-life name.
 - `:status` May be `"away"`, or some arbitrary status description.
 
-The `user-info` update is changed to now hold an optional `shirakumo:info` field that is an association list.
+The `user-info` update is changed to now hold an optional `info` field that is an association list.
 
 A new update called `set-user-info` is introduced. It is a `text-update`. It holds a `key` field that must be a symbol describing the info to set.
 
@@ -635,6 +635,47 @@ For channels and users, a new key type is introduced:
 - `:icon` The value of which must be a base64 encoded image file, with the content type prefixed like so: `content-type base64`.
 
 The server may reject images that are too large in dimension, or have a bad content-type. The server must in the very least support `image/png` and `image/gif` as content-types.
+
+#### 7.17 Signing (shirakumo-sign)
+Purpose: allows users to sign their messages with a PGP signature to ensure authenticity of the message.
+
+`update`s now have an additional field, `signature`. The signature is computed based on the following `utf-8` representation of updates:
+
+```
+UPDATE   ::= OBJECT NULL
+OBJECT   ::= '(' SYMBOL (SPACE KEYWORD SPACE EXPR)* ')'
+EXPR     ::= STRING | LIST | SYMBOL | NUMBER
+STRING   ::= '"' ('\' '"' | '\' '\' | !('"' | NULL))* '"'
+LIST     ::= '(' (EXPR (SPACE EXPR)*)? ')'
+SYMBOL   ::= KEYWORD | NAME ':' NAME
+KEYWORD  ::= ':' NAME
+NUMBER   ::= '0..9'+ ( '.' '0..9'*)?
+NAME     ::= ('\' '\' | '\' TERMINAL | !(TERMINAL | NULL))+
+TERMINAL ::= (':' | ' ' | '"' | '.' | '(' | ')')
+SPACE    ::= U+0020
+NULL     ::= U+0000
+```
+
+This is equivalent to the standard wire format structure and the recommended way of printing, but enforces single space between tokens, no use of backslash escapes unless necessary, and forces a leading digit on numbers, essentially eliminating all ambiguities in the syntax. Additional constraints on printing the update's fields apply:
+
+- The fields must be printed by sorting them according to the lexicographic order of their keys.
+- The `signature` field must be omitted.
+- The `clock` and `from` fields must be present.
+
+As an example, printing a standard `message` update would look as follows:
+
+```
+(message :channel "test" :clock 424742 :id 0 :from "tester" :text "something")
+```
+
+When the server receives a message with the `signature` field set, the following constraints apply to §5.1:
+
+- If the `from` or `clock` fields are not set, a `malformed-update` update is sent back and the request is dropped.
+- The server must not adjust the `clock` value.
+
+After the signature has been computed from the printed representation, the client should attach it to the `signature` field of the update and send it to the server. Clients may then verify the signature using the PGP public key of the user, if known. It is recommended for clients that support this extension to give a visual indicator for signed updates, especially if the signature verification should fail.
+
+A user's pgp key may be retrieved out of band, or using the `shirakumo-user-info` `:public-key` field if available.
 
 ### 8 General Conventions
 The following are general conventions for server and client implementors. However, they are not mandatory to follow, as they may only make sense for certain types of implementations.
