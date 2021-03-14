@@ -702,7 +702,7 @@ Purpose: allows users to search through the history of a channel to find relevan
 
 In order to facilitate this, the server must now keep updates in storage, potentially indefinitely. The server is only required to keep updates of type `message`, but may keep other updates of type `channel-update` as well. Of each update stored, the server must store at least the fields `id`, `from`, `clock`, and `channel`. It may store additional fields, and it may also drop them. This means that the server is not required to fully keep update identity.
 
-A new update type called `search` is introduced. It is a `channel-update`, and holds two additional fields, `results`, and `query`. The `query` field must hold a list of initargs, meaning alternating symbols and values to describe the keys to match. When the server receives a `search` update, it must proceed as follows:
+A new update type called `search` is introduced. It is a `channel-update`, and holds three additional fields, `results`, `offset`, and `query`. The `query` field must hold a list of initargs, meaning alternating symbols and values to describe the keys to match. When the server receives a `search` update, it must proceed as follows:
 
 1. If the user is not in the named channel, a `not-in-channel` update is sent back and the request is dropped.
 1. It gathers a list of all recorded updates that were posted to the channel specified in the `search` update.
@@ -722,6 +722,9 @@ A new update type called `search` is introduced. It is a `channel-update`, and h
         ```
         Where `ANY` stands for any particular character, and `NONE-OR-MORE` stands for an arbitrary number of arbitrary characters. When matching a single "character" with `ANY`, the Unicode Collation Algorithm rules must be followed. The query value matches if at least one of its strings matches.
    1. Should any of the fields not match, the update is removed from the list.
+1. The list of updates is sorted in order of their `clock` with the lowest being first.
+1. The first N updates are dropped off the list, where N corresponds to number in the `offset` field. If `offset` is not specified, 0 is assumed.
+1. The first N updates are kept and the rest dropped off the list, where N is an internal server limit, which must be at least 50.
 1. The list of updates is split into multiple lists such that each list can be reliably sent back to the user.
 1. For each list of updates, the list is put into the `search` update's `results` field and the update is sent back.
 
@@ -761,6 +764,7 @@ Should be translated into a search update like this:
          :text ("this" "that is")))
 ```
 
+The client should also offer an easy way to page through the results using the `offset` field. The end of the paging may be detected should the server ever return less than 50 results.
 
 ### 8 General Conventions
 The following are general conventions for server and client implementors. However, they are not mandatory to follow, as they may only make sense for certain types of implementations.
