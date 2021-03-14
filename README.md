@@ -625,6 +625,7 @@ Users now have an additional field, a "map of shares", which is a map associatin
 
 A new update called `share-identity` is introduced. When the server receives a `share-identity` update, it must react as follows:
 
+1. If the user already has too many identity shares, an `identity-already-used` failure is sent back and the update is dropped.
 1. A new random key is generated and associated with `nil` in the user's map of shares.
 1. The update is sent back with the `key` field set to the newly generated key.
 
@@ -636,11 +637,15 @@ A new update called `unshare-identity` is introduced. When the server receives a
 
 A new update called `list-shared-identities` is introduced. When the server receives a `list-shared-identities` update, it must react as follows:
 
-1. For every entry in the user's map of shares, the server gather's the key, as well as the name of the user the associated connection is from (or `nil` if the key is not associated yet) into a list.
+1. For every entry in the user's map of shares, the server gather's the key, as well as the name of the user the associated connection is from (or `nil` if the key is not associated yet) into a list:
+   ```
+   (("aoeubcoeusasoet425" "test") ("aoestuhau245757Saoeus" NIL))
+   ```
 1. The update is sent back, with the `identities` field set to the gathered list.
 
 A new update called `assume-identity` is introduced. It is a `target-update`. When the server receives an `assume-identity` update, it must react as follows:
 
+1. If the connection already assumes the identity of the target, or is the target, a `identity-already-used` failure is sent back and the update is dropped.
 1. If the `key` in the update is either not in the target user's map of shares, or the key is not associated with `nil`, a `identity-already-used` failure is sent back and the update is dropped.
 1. The connection the update is coming from is associated with the `key` in the target user's map of shares.
 1. The update is sent back to the originating connection.
