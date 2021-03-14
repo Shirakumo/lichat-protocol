@@ -697,6 +697,71 @@ After the signature has been computed from the printed representation, the clien
 
 A user's pgp key may be retrieved out of band, or using the `shirakumo-user-info` `:public-key` field if available.
 
+#### 7.18 History (shirakumo-history)
+Purpose: allows users to search through the history of a channel to find relevant messages.
+
+In order to facilitate this, the server must now keep updates in storage, potentially indefinitely. The server is only required to keep updates of type `message`, but may keep other updates of type `channel-update` as well. Of each update stored, the server must store at least the fields `id`, `from`, `clock`, and `channel`. It may store additional fields, and it may also drop them. This means that the server is not required to fully keep update identity.
+
+A new update type called `search` is introduced. It is a `channel-update`, and holds two additional fields, `results`, and `query`. The `query` field must hold a list of initargs, meaning alternating symbols and values to describe the keys to match. When the server receives a `search` update, it must proceed as follows:
+
+1. If the user is not in the named channel, a `not-in-channel` update is sent back and the request is dropped.
+1. It gathers a list of all recorded updates that were posted to the channel specified in the `search` update.
+1. For each update in the list:
+   1. The `query` field is compared against the update by comparing each initarg in the query to the corresponding field in the update, based on the field's type:
+      - `time`: The query value must be a list of two elements, being either `T` or a `time` value, with `T` being "any time". The first element designates the lowest possible time to match, and the second the highest possible time to match. This thus designates a range of time values, with the bounds being inclusive.
+      - `number`: The query value must be a number, and is compared to the candidate value by a standard number equality test.
+      - `symbol`: The query value must be a symbol, and matches if the candidate is the same symbol.
+      - `list`: The query value must be another list, and matches the candidate if all of the elements of the query appear in the candidate list, regardless of order. Elements are compared recursively.
+      - `string`: The query value must be a list of strings, each of them designating a matching spec:
+        ```
+        MATCH        ::= CHAR*
+        CHAR         ::= ESCAPED | ANY | NONE-OR-MORE | character
+        ESCAPED      ::= '\' character
+        ANY          ::= '_'
+        NONE-OR-MORE ::= '*'
+        ```
+        Where `ANY` stands for any particular character, and `NONE-OR-MORE` stands for an arbitrary number of arbitrary characters. When matching a single "character" with `ANY`, the Unicode Collation Algorithm rules must be followed. The query value matches if at least one of its strings matches.
+   1. Should any of the fields not match, the update is removed from the list.
+1. The list of updates is split into multiple lists such that each list can be reliably sent back to the user.
+1. For each list of updates, the list is put into the `search` update's `results` field and the update is sent back.
+
+The server should provide a means to delete updates from its history to ensure confidential and private information can be removed and is not preserved indefinitely. 
+
+The client should provide a convenient means to perform a search query. To this end we also specify a suggested means of formatting queries for end-user input. The query should be specified as freeform text, with the following queryspec format:
+
+```
+QUERY    ::= (FIELD | TOKEN)+
+FIELD    ::= WORD ':' TOKEN
+TOKEN    ::= STRING | WORD
+STRING   ::= '"' ('\' char | !'"') '"'
+WORD     ::= (!TERMINAL)+
+TERMINAL ::= ':' | ' ' | '"'
+```
+
+Where a `FIELD` specifies a specific field to match in an update, with the `WORD` designating the initarg and the `TOKEN` the value. Special 'virtual fields' should be added:
+
+- `after` Designates the former element in a `time` match for the `clock` field. If only `after` is specified, the latter element is `T`. The actual format of the `TOKEN` does not have to be an integer, but should be some human-readable datestring.
+- `before` Designates the latter element in a `time` match for the `clock` field. If only `before` is specified, the former element is `T`. The actual format of the `TOKEN` does not have to be an integer, but should be some human-readable datestring.
+- `in` Designates the `channel` field. If not present, the client should infer the channel to use from the current channel.
+
+The `TOKEN` should be parsed according to the standard wire format, unless more specific and convenient ways of specifying a fitting value are available. Each `TOKEN` than is not part of a `FIELD`, should designate a matching spec to be part of the list of matching specs for the `text` field.
+
+In other words, the following queryspec:
+
+```
+from:tester after:2020-01-01 this "that is" in:test
+```
+Should be translated into a search update like this:
+```
+(search
+ :id 0
+ :channel "test"
+ :query (:from "tester"
+         :clock (3786825600 T)
+         :text ("this" "that is")))
+```
+
+
 ### 8 General Conventions
 The following are general conventions for server and client implementors. However, they are not mandatory to follow, as they may only make sense for certain types of implementations.
 
