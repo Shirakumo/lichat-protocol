@@ -2,7 +2,27 @@
 This system specifies and implements the protocol of the Lichat chat system. It offers both verbal and programmatical descriptions of the protocol. If you are working with a Common Lisp system, you can use this system straight-away to process Lichat messages.
 
 ## Protocol Specification
-### 1. Wire Format
+### 1. Wire Format & Data Types
+The Lichat protocol defines the following basic data type hierarchy:
+
+- `number`
+  - `integer`
+    - `time` An integer representing time as the number of seconds since 1900.1.1 1:0:0 UTC.
+  - `float`
+  - `id`
+- `symbol`
+  - `keyword` A symbol whose package is `keyword`.
+  - `boolean`
+    - `null` The symbol `NIL` from the `lichat` package.
+    - `true` The symbol `T` from the `lichat` package.
+- `list`
+  - `(list type)` A list with each element being of type `type`.
+- `string`
+  - `username` See §2.2.1
+  - `channelname` See §2.4.4
+  - `password` See §2.3.1
+- `object`
+
 The wire format is based on UTF-8 character streams on which objects are serialised in a secure, simplified s-expression format. The format is as follows:
 
 ```BNF
@@ -11,7 +31,7 @@ OBJECT   ::= '(' WHITE* SYMBOL (WHITE+ KEYWORD WHITE+ EXPR)* WHITE* ')'
 EXPR     ::= STRING | LIST | SYMBOL | NUMBER
 STRING   ::= '"' ('\' ANY | !('"' | NULL))* '"'
 LIST     ::= '(' WHITE* (EXPR (WHITE+ EXPR)*)? WHITE* ')'
-SYMBOL   ::= KEYWORD | NAME ':' NAME
+SYMBOL   ::= KEYWORD | NAME | NAME ':' NAME
 KEYWORD  ::= ':' NAME
 NUMBER   ::= '0..9'+ ( '.' '0..9'*)? | '.' '0..9'*
 NAME     ::= (('\' ANY) | !(TERMINAL | NULL))+
@@ -80,7 +100,7 @@ EXCLUDE  ::= (- username*)
 INCLUDE  ::= (+ username*)
 ```
 
-Where `type` is the name of an update class, and `username` is the name of a user object. `t` is the CL symbol `T` and indicates "anyone". `nil` is the CL symbol `NIL` and indicates "no one". The `INCLUDE` expression only allows users whose names are listed to perform the action. The `EXCLUDE` expression allows anyone except users whose names are listed to perform the action. The expression `t` is thus equivalent to `(-)` and the expression `nil` is equivalent to `(+)`.
+Where `type` is the name of an update class, and `username` is the name of a user object. `t` is the symbol `T` and indicates "anyone". `nil` is the symbol `NIL` and indicates "no one". The `INCLUDE` expression only allows users whose names are listed to perform the action. The `EXCLUDE` expression allows anyone except users whose names are listed to perform the action. The expression `t` is thus equivalent to `(-)` and the expression `nil` is equivalent to `(+)`.
 
 ### 3. General Interaction
 The client and the server communicate through `update` objects over a connection. Each such object that is issued from the client must contain a unique `id`. This is important as the ID is reused by the server in order to communicate replies. The client can then compare the ID of the incoming updates to find the response to an earlier request, as responses may be reordered or delayed. The server does not check the ID in any way-- uniqueness and avoidance of clashing is the responsibility of the client. Each update *should* also contain a `clock` slot that specifies the time of sending. This is used to calculate latency and potential connection problems. If no clock is specified, the server must substitute the current time. Finally, each update *may* contain a `from` slot to identify the sending user. If the `from` slot is not given, the server automatically substitutes the known username for the connection the update is coming from.
@@ -647,7 +667,7 @@ OBJECT   ::= '(' SYMBOL (SPACE KEYWORD SPACE EXPR)* ')'
 EXPR     ::= STRING | LIST | SYMBOL | NUMBER
 STRING   ::= '"' ('\' '"' | '\' '\' | !('"' | NULL))* '"'
 LIST     ::= '(' (EXPR (SPACE EXPR)*)? ')'
-SYMBOL   ::= KEYWORD | NAME ':' NAME
+SYMBOL   ::= KEYWORD | NAME | NAME ':' NAME
 KEYWORD  ::= ':' NAME
 NUMBER   ::= '0..9'+ ( '.' '0..9'*)?
 NAME     ::= ('\' '\' | '\' TERMINAL | !(TERMINAL | NULL))+
