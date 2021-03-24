@@ -617,37 +617,41 @@ When the server receives a `set-user-info` update, it must react as follows:
 #### 7.15 Shared Identity (shirakumo-shared-identity)
 Purpose: allows creating tokens that let other users post updates on behalf of another (registered) user account.
 
-Users now have an additional field, a "map of shares", which is a map associating keys (strings of at least 16 characters in length) to connections.
+User profiles now have an additional field, a "lending map", which is a map associating keys (strings of at least 16 characters in length) to other usernames, and an "identities list", which is a list of usernames they can send updates on behalf of.
 
 §5.1.5 (`from` field check) is modified as follows:
 
-1. If the connection the update is originating from has an entry in the user's map of shares targeted with the `from` field, the `from` field check is elided.
+1. If the `from` field is in the connection's associated profile's "identities list" the `from` field check is elided.
 
 A new update called `share-identity` is introduced. When the server receives a `share-identity` update, it must react as follows:
 
-1. If the user already has too many identity shares, an `identity-already-used` failure is sent back and the update is dropped.
-1. A new random key is generated and associated with `nil` in the user's map of shares.
+1. If the user is not registered, a `no-such-profile` failure is sent back and the update is dropped.
+1. If the profile already has too many identity shares, an `identity-already-used` failure is sent back and the update is dropped.
+1. A new random key is generated and associated with `nil` in the profile's lending map.
 1. The update is sent back with the `key` field set to the newly generated key.
 
 A new update called `unshare-identity` is introduced. When the server receives an `unshare-identity` update, it must react as follows:
 
-1. If the `key` is not set, the user's map of shares is emptied.
-1. Otherwise, the entry corresponding to the `key` is removed from the user's map of shares.
+1. If the user is not registered, a `no-such-profile` failure is sent back and the update is dropped.
+1. If the `key` is not set, the profile's lending map is emptied and the user's name is removed from all identities lists.
+1. Otherwise, the entry corresponding to the `key` is removed from the profile's lending map, and the user's name is removed from the identities list of the user who redeemed the key.
 1. The update is sent back.
 
 A new update called `list-shared-identities` is introduced. When the server receives a `list-shared-identities` update, it must react as follows:
 
-1. For every entry in the user's map of shares, the server gather's the key, as well as the name of the user the associated connection is from (or `nil` if the key is not associated yet) into a list:
+1. If the user is not registered, a `no-such-profile` failure is sent back and the update is dropped.
+1. For every entry in the profile's lending map, the server gather's the key, as well as the username the associated connection is from (or `nil` if the key is not associated yet) into a list as for example:
    ```
    (("aoeubcoeusasoet425" "test") ("aoestuhau245757Saoeus" NIL))
    ```
-1. The update is sent back, with the `identities` field set to the gathered list.
+1. The update is sent back, with the `shares` field set to the gathered list, and the `identities` field set to the user's identities list.
 
 A new update called `assume-identity` is introduced. It is a `target-update`. When the server receives an `assume-identity` update, it must react as follows:
 
-1. If the connection already assumes the identity of the target, or is the target, a `identity-already-used` failure is sent back and the update is dropped.
-1. If the `key` in the update is either not in the target user's map of shares, or the key is not associated with `nil`, a `identity-already-used` failure is sent back and the update is dropped.
-1. The connection the update is coming from is associated with the `key` in the target user's map of shares.
+1. If the user is not registered, a `no-such-profile` failure is sent back and the update is dropped.
+1. If the target is already on the identities list of the profile, or the user is the target, an `identity-already-used` failure is sent back and the update is dropped.
+1. If the `key` in the update is either not in the target profile's lending map, or the key is not associated with `nil`, an `identity-already-used` failure is sent back and the update is dropped.
+1. The originating user is associated with the `key` in the target profile's map of shares, and the `target` is added to the originating profile's identities list.
 1. The update is sent back to the originating connection.
 
 #### 7.16 Icons (shirakumo-icons)
