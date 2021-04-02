@@ -775,6 +775,50 @@ Should be translated into a search update like this:
 
 The client should also offer an easy way to page through the results using the `offset` field. The end of the paging may be detected should the server ever return less than 50 results.
 
+#### 7.19 Block (shirakumo-block)
+Purpose: allows users to block other users, preventing seeing their updates. Having this property server-side instead of client-side means it is automatically persisted and synchronised.
+
+Profiles now have a new field: a block list. This is a list of usernames.
+
+Whenever an update is distributed over a channel, the following behaviour must be followed:
+
+1. For each (target) user in the channel:
+  1. If the user noted in the `from` field of the update is *not* the block list of the target user's profile:
+  1. The update is sent to all connections associated with the target user.
+
+A new update type called `block` is introduced. It is a `target-update`. When the server receives a `block` update, it must react as follows:
+
+1. If the user is not registered, the server replies with a `no-such-profile` failure and drops the update.
+1. The username from the `target` field is added to the profile's block list if it isn't present already.
+1. The update is sent back to the user.
+
+A new update type called `unblock` is introduced. It is a `target-update`. When the server receives an `unblock` update, it must react as follows:
+
+1. If the user is not registered, the server replies with a `no-such-profile` failure and drops the update.
+1. The username from the `target` field is removed to the profile's block list.
+1. The update is sent back to the user.
+
+#### 7.20 Reactions (shirakumo-reactions)
+Purpose: allows users to react to messages without sending a new message.
+
+This requires clients to implement unique IDs when sending an update. They do not need to be globally unique, but should be unique to that user, regardless of connection used.
+
+A new update type called `react` is introduced. It is a `channel-update` and carries the additional fields `update-id`, `target`, and `emote`. `update-id` must be an `id` used in a message previously sent by the `target` user in the `channel`. `emote` must either be unicode characters from the emoji block, or if the `shirakumo-emote` extension is supported, the name of an emote.
+
+When the server receives a `react` update, it must act as follows:
+
+1. If the user is not in the named channel, a `not-in-channel` update is sent back and the request is dropped.
+1. If the `emote` does not contain valid text as noted above, a `malformed-update` failure is sent back and the update is dropped.
+1. The user's `react` update is distributed to all users in the channel.
+
+For each visible update the client should now keep track of a table of reactions from emotes to lists of users that used the emote on the referenced update. When the client receives a `react` update, it should update the table as follows:
+
+1. If the emote is not in the table yet, a new entry is added, associated to an empty list.
+1. If the `from` user is not in the list of users, the user is added to it. Otherwise the user is removed from it.
+1. The table of emotes is displayed in the vicinity of the referenced update as a list of emotes and counts of users having used said emote. If applicable, the list of users having used the emote should also be displayed via a hover action.
+
+If a `react` update references an update that is not known to the client, it is ignored.
+
 ### 8 General Conventions
 The following are general conventions for server and client implementors. However, they are not mandatory to follow, as they may only make sense for certain types of implementations.
 

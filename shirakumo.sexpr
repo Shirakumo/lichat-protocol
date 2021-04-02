@@ -41,6 +41,12 @@
   (:identities list :optional))
 (define-object shirakumo:assume-identity (target-update)
   (:key string))
+(define-object shirakumo:block (target-update))
+(define-object shirakumo:unblock (target-update))
+(define-object shirakumo:react (channel-update)
+  (:target string)
+  (:update-id id)
+  (:emote string))
 
 (define-extension channels ()
   (:channel string :optional))
