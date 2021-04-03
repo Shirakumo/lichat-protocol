@@ -1,72 +1,120 @@
 (define-package "shirakumo")
-(define-object shirakumo:backfill (channel-update))
-(define-object shirakumo:data (channel-update)
-  (:content-type string)
-  (:filename string :optional)
-  (:payload string))
-(define-object shirakumo:emotes (update)
-  (:names (list string) :optional))
-(define-object shirakumo:emote (update)
-  (:content-type string)
-  (:name string)
-  (:payload string))
-(define-object shirakumo:edit (message))
-(define-object shirakumo:channel-info (channel-update)
-  (:keys (or (list symbol) T)))
-(define-object shirakumo:set-channel-info (channel-update text-update)
-  (:key symbol))
-(define-object shirakumo:kill (target-update))
-(define-object shirakumo:destroy (channel-update))
-(define-object shirakumo:ban (target-update))
-(define-object shirakumo:unban (target-update))
-(define-object shirakumo:ip-ban (update)
-  (:ip string)
-  (:mask string))
-(define-object shirakumo:ip-unban (update)
-  (:ip string)
-  (:mask string))
-(define-object shirakumo:pause (channel-update)
-  (:by integer))
-(define-object shirakumo:quiet (channel-update target-update))
-(define-object shirakumo:unquiet (channel-update target-update))
-(define-object shirakumo:bridge (channel-update))
-(define-object shirakumo:link (shirakumo:data))
-(define-object shirakumo:set-user-info (text-update)
-  (:key string))
-(define-object shirakumo:share-identity (update)
-  (:key string :optional))
-(define-object shirakumo:unshare-identity (update)
-  (:key string :optional))
-(define-object shirakumo:list-shared-identities (update)
-  (:identities list :optional))
-(define-object shirakumo:assume-identity (target-update)
-  (:key string))
-(define-object shirakumo:block (target-update))
-(define-object shirakumo:unblock (target-update))
-(define-object shirakumo:react (channel-update)
-  (:target string)
-  (:update-id id)
-  (:emote string))
 
-(define-extension channels ()
-  (:channel string :optional))
-(define-extension channel-update ()
-  (shirakumo:bridge string :optional))
-(define-extension text-update ()
-  (shirakumo:rich string :optional)
-  (shirakumo:markup string :optional))
-(define-extension user-info ()
-  (shirakumo:info list :optional))
-(define-extension message ()
-  (shirakumo:reply-to list :optional))
+(define-extension "shirakumo-backfill"
+  (define-object shirakumo:backfill (channel-update)))
 
-(define-object shirakumo:bad-content-type (update-failure)
-  (:allowed-content-types (list string)))
-(define-object shirakumo:no-such-parent-channel (update-failure))
-(define-object shirakumo:no-such-channel-info (update-failure)
-  (:key symbol))
-(define-object shirakumo:malformed-channel-info (update-failure))
-(define-object shirakumo:bad-ip-format (update-failure))
-(define-object shirakumo:malformed-user-info (update-failure))
-(define-object shirakumo:no-such-user-info (update-failure)
-  (:key symbol))
+(define-extension "shirakumo-data"
+  (define-object shirakumo:data (channel-update)
+    (:content-type string)
+    (:filename string :optional)
+    (:payload string))
+  (define-object shirakumo:bad-content-type (update-failure)
+    (:allowed-content-types (list string))))
+
+(define-extension "shirakumo-emote"
+  (define-object shirakumo:emotes (update)
+    (:names (list string) :optional))
+  (define-object shirakumo:emote (update)
+    (:content-type string)
+    (:name string)
+    (:payload string)))
+
+(define-extension "shirakumo-edit"
+  (define-object shirakumo:edit (message)))
+
+(define-extension "shirakumo-channel-trees"
+  (define-object-extension channels ()
+    (:channel string :optional))
+  (define-object shirakumo:no-such-parent-channel (update-failure)))
+
+(define-extension "shirakumo-channel-info"
+  (define-object shirakumo:channel-info (channel-update)
+    (:keys (or (list symbol) T)))
+  (define-object shirakumo:set-channel-info (channel-update text-update)
+    (:key symbol))
+  (define-object shirakumo:no-such-channel-info (update-failure)
+    (:key symbol))
+  (define-object shirakumo:malformed-channel-info (update-failure)))
+
+(define-extension "shirakumo-server-management"
+  (define-object shirakumo:kill (target-update))
+  (define-object shirakumo:destroy (channel-update))
+  (define-object shirakumo:ban (target-update))
+  (define-object shirakumo:unban (target-update)))
+
+(define-extension "shirakumo-pause"
+  (define-object shirakumo:pause (channel-update)
+    (:by integer)))
+
+(define-extension "shirakumo-quiet"
+  (define-object shirakumo:quiet (channel-update target-update))
+  (define-object shirakumo:unquiet (channel-update target-update)))
+
+(define-extension "shirakumo-ip"
+  (define-object shirakumo:ip-ban (update)
+    (:ip string)
+    (:mask string))
+  (define-object shirakumo:ip-unban (update)
+    (:ip string)
+    (:mask string))
+  (define-object shirakumo:bad-ip-format (update-failure)))
+
+(define-extension "shirakumo-bridge"
+  (define-object shirakumo:bridge (channel-update))
+  (define-object-extension channel-update ()
+    (shirakumo:bridge string :optional)))
+
+(define-extension "shirakumo-link"
+  (define-object shirakumo:link (shirakumo:data)))
+
+(define-extension "shirakumo-markup"
+  (define-object-extension text-update ()
+    (shirakumo:rich string :optional)
+    (shirakumo:markup string :optional)))
+
+(define-extension "shirakumo-user-info"
+  (define-object shirakumo:set-user-info (text-update)
+    (:key string))
+  (define-object-extension user-info ()
+    (shirakumo:info list :optional))
+  (define-object shirakumo:malformed-user-info (update-failure))
+  (define-object shirakumo:no-such-user-info (update-failure)
+    (:key symbol)))
+
+(define-extension "shirakumo-shared-identity"
+  (define-object shirakumo:share-identity (update)
+    (:key string :optional))
+  (define-object shirakumo:unshare-identity (update)
+    (:key string :optional))
+  (define-object shirakumo:list-shared-identities (update)
+    (:identities list :optional))
+  (define-object shirakumo:assume-identity (target-update)
+    (:key string)))
+
+(define-extension "shirakumo-sign"
+  (define-object-extension update ()
+    (shirakumo:signature string :optional)))
+
+(define-extension "shirakumo-history"
+  (define-object shirakumo:search (channel-update)
+    (:results list :optional)
+    (:offset integer :optional)
+    (:query list :optional)))
+
+(define-extension "shirakumo-block"
+  (define-object shirakumo:block (target-update))
+  (define-object shirakumo:unblock (target-update))
+  (define-object shirakumo:react (channel-update)
+    (:target string)
+    (:update-id id)
+    (:emote string)))
+
+(define-extension "shirakumo-reactions"
+  (define-object shirakumo:react (channel-update)
+    (:target string)
+    (:update-id id)
+    (:emote string)))
+
+(define-extension "shirakumo-replies"
+  (define-object-extension message ()
+    (shirakumo:reply-to list :optional)))
