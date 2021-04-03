@@ -819,6 +819,17 @@ For each visible update the client should now keep track of a table of reactions
 
 If a `react` update references an update that is not known to the client, it is ignored.
 
+#### 7.21 Replies (shirakumo-replies)
+Purpose: allows specifying another message that a message is in reply to.
+
+This requires clients to implement unique IDs when sending an update. They do not need to be globally unique, but should be unique to that user, regardless of connection used.
+
+A new field is added to the `message` update: `reply-to`. The field should hold a list of two values, a username and an id, identifying the message this message is in reply to.
+
+The server does not have to do anything special aside from transmitting the field.
+
+When the client receives a `message` update with the `reply-to` field set, it should display the message in relation to the original message, by quoting it or linking back to it in some manner.
+
 ### 8 General Conventions
 The following are general conventions for server and client implementors. However, they are not mandatory to follow, as they may only make sense for certain types of implementations.
 

@@ -57,6 +57,8 @@
   (shirakumo:markup string :optional))
 (define-extension user-info ()
   (shirakumo:info list :optional))
+(define-extension message ()
+  (shirakumo:reply-to list :optional))
 
 (define-object shirakumo:bad-content-type (update-failure)
   (:allowed-content-types (list string)))
