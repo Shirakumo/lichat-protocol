@@ -737,7 +737,7 @@ A new update type called `search` is introduced. It is a `channel-update`, and h
 1. The list of updates is split into multiple lists such that each list can be reliably sent back to the user.
 1. For each list of updates, the list is put into the `search` update's `results` field and the update is sent back.
 
-The server should provide a means to delete updates from its history to ensure confidential and private information can be removed and is not preserved indefinitely. 
+The server should provide a means to delete updates from its history to ensure confidential and private information can be removed and is not preserved indefinitely. If the `search` update has a permission of `NIL` (being denied to everyone) in a channel, the history does not need to be recorded. If a channel expires, its history must be deleted.
 
 The client should provide a convenient means to perform a search query. To this end we also specify a suggested means of formatting queries for end-user input. The query should be specified as freeform text, with the following queryspec format:
 
@@ -774,6 +774,8 @@ Should be translated into a search update like this:
 ```
 
 The client should also offer an easy way to page through the results using the `offset` field. The end of the paging may be detected should the server ever return less than 50 results.
+
+If the server also supports the `shirakumo-backfill` extension, it may deliver backfill using the history, even if users were not previously in the channel. This poses a privacy risk, but as search is not otherwise restricted anyway, it makes no difference.
 
 #### 7.19 Block (shirakumo-block)
 Purpose: allows users to block other users, preventing seeing their updates. Having this property server-side instead of client-side means it is automatically persisted and synchronised.
