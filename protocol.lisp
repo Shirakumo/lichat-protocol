@@ -201,7 +201,8 @@
   ((password :initarg :password :accessor password :slot-type password)))
 
 (define-protocol-class channel-update (update)
-  ((channel :initarg :channel :accessor channel :slot-type channelname)))
+  ((channel :initarg :channel :accessor channel :slot-type channelname)
+   (bridge :initarg :bridge :accessor bridge :slot-type username)))
 
 (defmethod print-object ((update channel-update) stream)
   (print-unreadable-object (update stream :type T)
@@ -256,7 +257,7 @@
   ((update :initarg :update :accessor update :slot-type symbol)))
 
 (define-protocol-class message (channel-update text-update)
-  ())
+  ((link :initarg :link :accessor link :slot-type string)))
 
 (define-protocol-class users (channel-update)
   ((users :initarg :users :accessor users :slot-type list))
