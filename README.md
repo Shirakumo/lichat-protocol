@@ -555,7 +555,7 @@ A new field called `shirakumo:link` is added to the `message` update.
 When the server receives a `data` update, it must instead of §7.2.3 (distributing the update) act as follows:
 
 1. The data payload is saved somewhere, such that it is publicly accessible through an HTTP or HTTPS URL.
-1. A new `message` update is generated from the `data` update, with the `text` being the public URL of the payload, and the `shirakumo:link` attribute containing the filename.
+1. A new `message` update is generated from the `data` update, with the `text` being the public URL of the payload, and the `shirakumo:link` attribute containing the content-type.
 1. The new `message` update is distributed to the channel.
 1. The update is dropped
 
