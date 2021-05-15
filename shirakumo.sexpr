@@ -104,11 +104,7 @@
 
 (define-extension "shirakumo-block"
   (define-object shirakumo:block (target-update))
-  (define-object shirakumo:unblock (target-update))
-  (define-object shirakumo:react (channel-update)
-    (:target string)
-    (:update-id id)
-    (:emote string)))
+  (define-object shirakumo:unblock (target-update)))
 
 (define-extension "shirakumo-reactions"
   (define-object shirakumo:react (channel-update)
