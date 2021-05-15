@@ -65,7 +65,8 @@
     (shirakumo:bridge string :optional)))
 
 (define-extension "shirakumo-link"
-  (define-object shirakumo:link (shirakumo:data)))
+  (define-object-extension message ()
+    (shirakumo:link string :optional)))
 
 (define-extension "shirakumo-markup"
   (define-object-extension text-update ()
