@@ -399,6 +399,7 @@ Channels receive extra metadata fields that can be set set by users. To this end
 - `:topic` A description of the general discussion topic of the channel
 - `:rules` A Description of the rules that need to be followed by channel members
 - `:contact` Information on how to reach contact persons for administrative problems
+- `:url` Some kind of URL to a website representing the channel
 
 A new update called `channel-info` is introduced. It is a `channel-update` and holds a `keys` field that can either be `T` or a list of keys as symbols describing the info to fetch.
 
