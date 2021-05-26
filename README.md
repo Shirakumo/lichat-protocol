@@ -27,7 +27,7 @@ The wire format is based on UTF-8 character streams on which objects are seriali
 
 ```BNF
 UPDATE   ::= OBJECT NULL
-OBJECT   ::= '(' WHITE* SYMBOL (WHITE+ KEYWORD WHITE+ EXPR)* WHITE* ')'
+OBJECT   ::= '(' WHITE* SYMBOL (WHITE+ SYMBOL WHITE+ EXPR)* WHITE* ')'
 EXPR     ::= STRING | LIST | SYMBOL | NUMBER
 STRING   ::= '"' ('\' ANY | !('"' | NULL))* '"'
 LIST     ::= '(' WHITE* (EXPR (WHITE+ EXPR)*)? WHITE* ')'
@@ -41,8 +41,6 @@ NULL     ::= U+0000
 ANY      ::= !NULL
 ```
 
-See `to-wire`, `from-wire`.
-
 #### 1.1 Symbols
 A symbol is an object with a "name" that is home to a "package". A "package" is a simple collection of symbols. Symbols are uniquely identified by their name and package, and no two symbols with the same name may exist in the same package. The package and symbol names are case-insensitive, and two names are considered the same if they match after both have been transformed to lower case.
 
@@ -55,6 +53,34 @@ Special care must be taken when `object`s are read from the wire. An error must 
 
 #### 1.3 Null Characters
 Null characters (`U+0000`) must not appear anywhere within a wireable. If a string were to contain null characters, they must be filtered out. If a symbol were to contain null characters, the message may not be put to the wire.
+
+#### 1.4 Machine-Readable Definition
+All object types are specified in [lichat.sexpr](lichat.sexpr) in a machine-readable format based on the above wire format. The same format *should* also be used by extension providers to define their extensions to the protocol. The definitions can be parsed by parsing the file into a sequence of `EXPR`s, each being further parsed according to the following `DEFINITION` rule:
+
+```BNF
+DEFINITION           ::= PACKAGE | OBJECT | EXTENSION
+PACKAGE              ::= (define-package PACKAGE-NAME)
+PACKAGE-NAME         ::= STRING
+OBJECT               ::= (define-object CLASS-NAME (SUPERCLASS*) SLOT*)
+CLASS-NAME           ::= SYMBOL
+SUPERCLASS           ::= SYMBOL
+SLOT                 ::= (SLOT-NAME TYPE OPTIONAL?)
+FIELD-NAME           ::= SYMBOL
+TYPE                 ::= number | integer | time | float | id | symbol | keyword
+                       | boolean | null | true | list | (list TYPE) | string
+                       | username | channelname | password | object | T
+OPTIONAL             ::= :optional
+EXTENSION            ::= (define-extension EXTENSION-NAME EXTENSION-DEFINITION*)
+EXTENSION-NAME       ::= STRING
+EXTENSION-DEFINITION ::= OBJECT | OBJECT-EXTENSION
+OBJECT-EXTENSION     ::= (define-object-extension CLASS-NAME (SUPERCLASS*) SLOT*)
+```
+
+The meaning of each definition is as follows:
+- `package` Introduces a new, known package with the `PACKAGE-NAME` as its name.
+- `object` Introduces a new object type using `CLASS-NAME` as its name. Each `SUPERCLASS` must name an object type that was previously introduced, and whose fields *and behaviour* should be inherited. Each `SLOT` defines a slot that the object holds in addition to the inherited ones. If the slot definition includes the `:optional` keyword, the slot may be omitted when serialising to the wire. If `:optional` is not included, the slot *must* be serialised. When translating from the wire, an omitted `:optional` slot should be initialised to an empty value. An omitted non-`:optional` slot must result in a `malformed-update` error.
+- `extension` Introduces a protocol extension of the given `EXTENSION-NAME`. Its body includes new definitions that need to be added if the extension is to be supported.
+- `object-extension` Changes an existing object type of `CLASS-NAME` by either introducing additional `SUPERCLASS`es, or introducing additional `SLOT` definitions on the object. Note that in order to stay backwards compatible, every slot specified via an `object-extension` must be `:optional`.
 
 ### 2. Server Objects
 The server must keep track of a number of objects that are related to the current state of the chat system. The client may also keep track of some of these objects for its own convenience.
