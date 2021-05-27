@@ -53,7 +53,8 @@
 
 (defun print-sexpr (sexpr stream)
   (typecase sexpr
-    (list (print-sexpr-list sexpr stream))
+    (null (write-string "NIL" stream))
+    (cons (print-sexpr-list sexpr stream))
     (string (print-sexpr-string sexpr stream))
     (real (print-sexpr-number sexpr stream))
     (symbol (print-sexpr-symbol sexpr stream))
