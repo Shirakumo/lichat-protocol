@@ -205,6 +205,7 @@ Creating a new channel happens with the `create` update:
 
 1. The update is checked for permissions by the primary channel.
 1. If a channel of the `channel` name in the update already exists, the server responds with a `channelname-taken` update and drops the request.
+1. If the user already inhabits the maximum amount of channels, the server responds with a `too-many-channels` update and drops the request.
 1. If the `channel` field is `NIL`, an anonymous channel is created, otherwise a regular channel is created.
 1. The user is automatically joined to the channel.
 1. The server responds with a `join` update to the user with the `id` being the same as the id of the create update.
@@ -243,6 +244,7 @@ A user can interact with a channel in several ways.
 Joining a channel happens with the `join` update, after which the server acts as follows:
 
 1. If the user is already in the named channel, an `already-in-channel` update is sent back and the request is dropped.
+1. If the user already inhabits the maximum amount of channels, the server responds with a `too-many-channels` update and drops the request.
 1. The user is added to the channel's list of users.
 1. The user's `join` update is distributed to all users in the channel.
 
@@ -258,6 +260,7 @@ Another user can be pulled into the channel by the `pull` update, after which th
 
 1. If the user is not in the named channel, a `not-in-channel` update is sent back and the request is dropped.
 1. If the target user is already in the named channel, an `already-in-channel` update is sent back and the request is dropped.
+1. If the target already inhabits the maximum amount of channels, the server responds with a `too-many-channels` update and drops the request.
 1. The target user is added to the channel's list of users.
 1. A `join` update for the target user with the same `id` as the `pull` update is distributed to all users in the channel.
 

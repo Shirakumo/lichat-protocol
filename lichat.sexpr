@@ -64,6 +64,7 @@
 (define-object already-in-channel (update-failure))
 (define-object not-in-channel (update-failure))
 (define-object channelname-taken (update-failure))
+(define-object too-many-channels (update-failure))
 (define-object bad-name (update-failure))
 (define-object insufficient-permissions (update-failure))
 (define-object invalid-permissions (update-failure))

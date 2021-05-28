@@ -153,6 +153,7 @@
    #:not-in-channel
    #:channelname-taken
    #:bad-name
+   #:too-many-channels
    #:insufficient-permissions
    #:invalid-permissions
    #:no-such-user

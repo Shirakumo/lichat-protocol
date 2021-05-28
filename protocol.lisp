@@ -416,6 +416,10 @@
   ()
   (:default-initargs :text "The requested channelname is already taken."))
 
+(define-protocol-class too-many-channels (update-failure)
+  ()
+  (:default-initargs :text "The user already inhabits the maximum number of channels."))
+
 (define-protocol-class bad-name (update-failure)
   ()
   (:default-initargs :text "The specified name is not a valid name."))
