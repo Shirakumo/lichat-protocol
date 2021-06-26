@@ -115,3 +115,8 @@
 (define-extension "shirakumo-replies"
   (define-object-extension message ()
     (shirakumo:reply-to list :optional)))
+
+(define-extension "shirakumo-last-read"
+  (define-object shirakumo:last-read (channel-update)
+    (:target string :optional)
+    (:update-id id :optional)))

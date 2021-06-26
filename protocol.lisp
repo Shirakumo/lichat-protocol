@@ -288,7 +288,7 @@
   ((content-type :initarg :content-type :accessor content-type :slot-type string)
    (filename :initarg :filename :accessor filename :slot-type (or null string))
    (payload :initarg :payload :accessor payload :slot-type string))
-  (:default-initargs :file-name NIL))
+  (:default-initargs :filename NIL))
 
 (define-protocol-class emotes (update)
   ((names :initarg :names :accessor names :slot-type list))

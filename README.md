@@ -863,6 +863,24 @@ The server does not have to do anything special aside from transmitting the fiel
 
 When the client receives a `message` update with the `reply-to` field set, it should display the message in relation to the original message, by quoting it or linking back to it in some manner.
 
+#### 7.22 Last Read (shirakumo-last-read)
+Purpose: allows tracking which message in a channel was last read across connections.
+
+This requires the server to track a new per-user property in each channel: 'last read message', which is a tuple of a message ID and a username.
+
+A new update is introduced called `last-read`, which is a `channel-update`. It has two additional optional fields, `update-id`, and `target`. `update-id` must be an `id` used in a message previously sent by the `target` user in the `channel`.
+
+When the server receives a `last-read` update, it proceeds as follows:
+
+1. If the `update-id` and `target` fields are set:
+  1. The id and target are stored for the user's 'last read message' in the associated channel.
+  1. The update is sent back to the user.
+1. Otherwise:
+  1. The update is modified to use the 'last read message' information to fill in the `update-id` and `target` fields.
+  1. The update is sent back to the sending connection.
+
+If the user leaves a channel, the 'last read message' tuple may be unset. If a user enters a channel, the 'last read message' tuple must be set to the `enter` message's `id` and `from` fields, should the 'last read message' tuple be unset.
+
 ### 8 General Conventions
 The following are general conventions for server and client implementors. However, they are not mandatory to follow, as they may only make sense for certain types of implementations.
 
