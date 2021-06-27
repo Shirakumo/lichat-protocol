@@ -881,6 +881,19 @@ When the server receives a `last-read` update, it proceeds as follows:
 
 If the user leaves a channel, the 'last read message' tuple may be unset. If a user enters a channel, the 'last read message' tuple must be set to the `enter` message's `id` and `from` fields, should the 'last read message' tuple be unset.
 
+#### 7.23 Typing (shirakumo-typing)
+Purpose: allows specifying when a user is in the process of typing a message.
+
+A new update is introduced called `typing`, which is a `channel-update`.
+
+When the server receives a `typing` update, it proceeds as follows:
+
+1. The update is distributed to all users in the channel.
+
+When a client receives a `typing` update, it should notify the user that the update's sender is typing something. If no new `typing` update is received within the next 5 seconds, the typing notification should be cleared.
+
+When the client's user types, the client may send a `typing` update to the current channel, as long as the previous `typing` update was sent more than 4 seconds ago.
+
 ### 8 General Conventions
 The following are general conventions for server and client implementors. However, they are not mandatory to follow, as they may only make sense for certain types of implementations.
 

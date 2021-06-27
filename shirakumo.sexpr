@@ -120,3 +120,6 @@
   (define-object shirakumo:last-read (channel-update)
     (:target string :optional)
     (:update-id id :optional)))
+
+(define-extension "shirakumo-typing"
+  (define-object shirakumo:typing (channel-update)))
