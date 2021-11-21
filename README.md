@@ -372,24 +372,40 @@ The `data` update contains three slots, with the following intentions:
 #### 7.3 Emotes (shirakumo-emotes)
 Purpose: introduces server-side emoticons that are distributed to all users for use on the client-side.
 
-Two new update types called `emotes` and `emote` are introduced. If the server receives an `emotes` update from a connection, it reacts as follows:
+Any non-anonymous channel created by a registered user holds an `emotes` map. The server may restrict the size of this map. The server should also set the default permissions for `emotes` to anyone, and `emote` to only the registrant.
 
-1. The server computes a set difference between the known emote names, and the names listed in the event's `names` slot. Emote names are case-insensitive.
-1. For each emote in the calculated set, the server sends back an `emote` update, where the `name` is set to the emote's name, and the `payload` is set to the base-64 encoded image representing the emote. The `content-type` must be set accordingly.
+Two new update types called `emotes` and `emote` are introduced, both of which are `channel-update`s.
 
-When the client receives an `emote` update from the server, it reacts as follows:
-
-1. The `payload` and `content-type` are associated with the `name` and persisted on the client. When the client sends an `emotes` event it to the server it should include the name of this emote in the `names` list.
-
-The `emotes` update contains one slot, with the following intentions:
+The `emotes` update contains one extra slot, with the following intentions:
 
 * `names` This contains a list of strings denoting the names of emotes the client knows about.
 
-The `emote` update contains three slots, with the following intentions:
+The `emote` update contains three extra slots, with the following intentions:
 
 * `content-type` A string representing the [content type](https://en.wikipedia.org/wiki/Media_type) of the emote image contained in the update.
 * `name` A string representing the name of the emote.
 * `payload` A base-64 encoded string of binary data payload.
+
+If the server receives an `emotes` update from a connection, it reacts as follows:
+
+1. If the channel field is missing, the primary channel's name is substituted.
+1. If the user is not in the named channel, a `not-in-channel` update is sent back and the request is dropped.
+1. If the channel is anonymous or wasn't created by a registered user, an `insufficient-permissions` update is sent back and the request is dropped.
+1. The server computes a set difference between the known emote names for the channel, and the names listed in the event's `names` slot. Emote names are case-insensitive.
+1. For each emote in the calculated set, the server sends back an `emote` update, where the `name` is set to the emote's name, the `channel` to the channel, and the `payload` is set to the base-64 encoded image representing the emote. The `content-type` must be set accordingly.
+
+If the server receives an `emote` update from a connection, it reacts as follows:
+
+1. If the user is not in the named channel, a `not-in-channel` update is sent back and the request is dropped.
+1. If the `name` is not yet contained in the channel's `emotes` map, and the map already matches the size restriction of the server, an `emote-list-full` update is sent back and the request is dropped.
+1. If the `content-type` is not acceptable, an update of type `bad-content-type` is sent back and the request is dropped.
+1. If the payload exceeds internal limits, an update of type `update-too-long` is sent back and the request is dropped.
+1. The emote data is stored in the channel's `emotes` map.
+1. The `emote` update is distributed to all users in the channel.
+
+When the client receives an `emote` update from the server, it reacts as follows:
+
+1. The `payload` and `content-type` are associated with the `name` and persisted on the client. When the client sends an `emotes` event it to the server it should include the name of this emote in the `names` list.
 
 When the client sees a `message` update, every match of the regex `:([^:]+):` in the `text` where the group matched by the regex is the name of an emote from the known list of emotes, then the match of the regex should be displayed to the user by an image of the emote's image.
 
@@ -418,6 +434,10 @@ A new error `no-such-parent-channel` is introduced. It is an `update-failure`.
 Specifically, an update requesting ``foo`` should list ``foo/bar``, but not ``foo/bar/baz``.
 
 Clients that support this extension are required to implement the following special semantic: if a user uses a command that requires a channel name, and the user begins the channel name with a forward slash, the client should automatically prepend the current channel name to the specified channel name, if there is a channel that is considered "current". If no channel is explicitly current, the primary channel is considered current.
+
+If the server also supports the `shirakumo-emotes` extension, it should set the default permission for `emote` updates to nobody.
+
+If the client also supports the `shirakumo-emotes` extension, it should make sure that emotes from the top ancestor channel are available in any descendant channel.
 
 #### 7.6 Channel Info (shirakumo-channel-info)
 Purpose: allows associating metadata with channels such as the set of rules, a topic, and so forth.

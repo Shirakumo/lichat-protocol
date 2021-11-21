@@ -12,12 +12,13 @@
     (:allowed-content-types (list string))))
 
 (define-extension "shirakumo-emote"
-  (define-object shirakumo:emotes (update)
+  (define-object shirakumo:emotes (channel-update)
     (:names (list string) :optional))
-  (define-object shirakumo:emote (update)
+  (define-object shirakumo:emote (channel-update)
     (:content-type string)
     (:name string)
-    (:payload string)))
+    (:payload string))
+  (define-object shirakumo:emote-list-full (update-failure)))
 
 (define-extension "shirakumo-edit"
   (define-object shirakumo:edit (message)))
