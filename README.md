@@ -400,7 +400,7 @@ If the server receives an `emote` update from a connection, it reacts as follows
 1. If the `name` is not yet contained in the channel's `emotes` map, and the map already matches the size restriction of the server, an `emote-list-full` update is sent back and the request is dropped.
 1. If the `content-type` is not acceptable, an update of type `bad-content-type` is sent back and the request is dropped.
 1. If the payload exceeds internal limits, an update of type `update-too-long` is sent back and the request is dropped.
-1. The emote data is stored in the channel's `emotes` map.
+1. If the payload is empty, the emote is removed, and otherwise the emote data is stored in the channel's `emotes` map.
 1. The `emote` update is distributed to all users in the channel.
 
 When the client receives an `emote` update from the server, it reacts as follows:
