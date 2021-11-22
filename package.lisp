@@ -168,6 +168,7 @@
   ;; reader.lisp
   (:export
    #:whitespace-p
+   #:skip-to-null
    #:read-sexpr)
   ;; typed-slot-class.lisp
   (:export)
@@ -175,4 +176,5 @@
   (:export
    #:to-wire
    #:check-update-options
-   #:from-wire))
+   #:from-wire
+   #:from-wire*))

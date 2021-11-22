@@ -56,3 +56,13 @@
             sexpr))
       (loop for char = (read-char stream NIL)
             until (or (not char) (char= #\Nul char))))))
+
+(defun from-wire* (stream &optional limit)
+  (handler-case
+      (handler-bind ((unknown-symbol #'continue))
+        (from-wire stream limit))
+    (stray-null-found ()
+      NIL)
+    (reader-condition ()
+      (skip-to-null)
+      NIL)))

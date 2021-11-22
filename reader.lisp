@@ -105,6 +105,9 @@
           (T
            (safe-find-symbol token #.*package*)))))
 
+(defun skip-to-null (stream)
+  (loop until (char= #\Null (read-char stream NIL #\Null))))
+
 (defun read-sexpr (stream)
   (let* ((char (lread stream))
          (*errors* NIL)
