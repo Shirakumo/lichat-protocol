@@ -54,6 +54,7 @@
 (defun print-sexpr (sexpr stream)
   (typecase sexpr
     (null (write-string "NIL" stream))
+    ((eql T) (write-string "T" stream))
     (cons (print-sexpr-list sexpr stream))
     (string (print-sexpr-string sexpr stream))
     (real (print-sexpr-number sexpr stream))
