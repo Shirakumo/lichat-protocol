@@ -259,7 +259,8 @@
   ((update :initarg :update :accessor update :slot-type symbol)))
 
 (define-protocol-class message (channel-update text-update)
-  ((link :initarg :link :accessor link :slot-type (or null string))))
+  ((link :initarg :link :accessor link :slot-type (or null string)))
+  (:default-initargs :link NIL))
 
 (define-protocol-class users (channel-update)
   ((users :initarg :users :accessor users :slot-type list))
@@ -292,11 +293,11 @@
    (payload :initarg :payload :accessor payload :slot-type string))
   (:default-initargs :filename NIL))
 
-(define-protocol-class emotes (update)
+(define-protocol-class emotes (channel-update)
   ((names :initarg :names :accessor names :slot-type list))
   (:default-initargs :names NIL))
 
-(define-protocol-class emote (update)
+(define-protocol-class emote (channel-update)
   ((content-type :initarg :content-type :accessor content-type :slot-type string)
    (name :initarg :name :accessor name :slot-type string)
    (payload :initarg :payload :accessor payload :slot-type string)))
