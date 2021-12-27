@@ -41,7 +41,9 @@
   (define-object shirakumo:kill (target-update))
   (define-object shirakumo:destroy (channel-update))
   (define-object shirakumo:ban (target-update))
-  (define-object shirakumo:unban (target-update)))
+  (define-object shirakumo:unban (target-update))
+  (define-object shirakumo:blacklist ()
+    (:target (list string) :optional))
 
 (define-extension "shirakumo-pause"
   (define-object shirakumo:pause (channel-update)
@@ -58,6 +60,8 @@
   (define-object shirakumo:ip-unban (update)
     (:ip string)
     (:mask string))
+  (define-object shirakumo:ip-blacklist ()
+    (:target (list (list string)) :optional))
   (define-object shirakumo:bad-ip-format (update-failure)))
 
 (define-extension "shirakumo-bridge"
@@ -105,7 +109,9 @@
 
 (define-extension "shirakumo-block"
   (define-object shirakumo:block (target-update))
-  (define-object shirakumo:unblock (target-update)))
+  (define-object shirakumo:unblock (target-update))
+  (define-object shirakumo:blocked ()
+    (:target (list string) :optional))
 
 (define-extension "shirakumo-reactions"
   (define-object shirakumo:react (channel-update)

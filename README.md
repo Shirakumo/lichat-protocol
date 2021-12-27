@@ -507,6 +507,11 @@ A new update called `unban` is introduced. It is a `target-update`. When the ser
 1. The `target` is removed from the `blacklist` set.
 1. The update is sent back to the user.
 
+A new update called `blacklist` is introduced. When a server receives a `blacklist` update, it must react as follows:
+
+1. The update's `target` field is set to the list of usernames contained in the `blacklist`.
+1. The update is sent back to the user.
+
 #### 7.8 Pause (shirakumo-pause)
 Purpose: allows throttling high traffic channels to prevent frequent spam by users.
 
@@ -576,6 +581,11 @@ A new update called `ip-unban` is introduced. It holds the same fields as `ip-ba
 1. The update is sent back to the user.
 
 A new connection attribute called `shirakumo:ip` is introduced, which is a string showing the IP address from which the connection originates.
+
+A new update called `ip-blacklist` is introduced. When a server receives an `ip-blacklist` update, it must react as follows:
+
+1. The update's `target` field is set to the list of IP addresses and masks contained in the `ip-blacklist`.
+1. The update is sent back to the user.
 
 #### 7.11 Bridge (shirakumo-bridge)
 Purpose: allows bridging chat channels from external services by sending messages on behalf of other users.
@@ -849,6 +859,12 @@ A new update type called `unblock` is introduced. It is a `target-update`. When 
 
 1. If the user is not registered, the server replies with a `no-such-profile` failure and drops the update.
 1. The username from the `target` field is removed to the profile's block list.
+1. The update is sent back to the user.
+
+A new update type called `blocked` is introduced. When the server receives a `blocked` update, it must react as follows:
+
+1. If the user is not registered, the server replies with a `no-such-profile` failure and drops the update.
+1. The update's `target` field is filled with a list of usernames on the sending user profile's block list.
 1. The update is sent back to the user.
 
 #### 7.20 Reactions (shirakumo-reactions)
