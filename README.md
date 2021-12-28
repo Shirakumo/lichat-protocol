@@ -349,10 +349,10 @@ Purpose: allow users to catch up with the contents of a channel should they init
 
 In order to facilitate this, the server is forced to keep copies of the updates. The server is allowed to only keep updates for a certain duration, or only a certain number of total updates. In order to avoid spying, the server must not distribute updates that the user did not already receive previously through another connection. The server does not have to make any guarantee about the order in which the updates are sent back to the connection. The client on the other side is responsible for ordering them as appropriate according to the clock.
 
-A new update type called `backfill` is introduced, which is a `channel-update`. If the server receives such an update from a connection, it reacts as follows:
+A new update type called `backfill` is introduced, which is a `channel-update` and has an extra, optional field called `since` which should be a universal-time timestamp. If the server receives such an update from a connection, it reacts as follows:
 
 1. If the user is not in the named channel, a `not-in-channel` update is sent back and the request is dropped.
-1. Following this, updates are sent back to the connection the update came from. These updates should include all updates that were distributed to users in the channel, spanning from now to an arbitrary point in time that is at most when the user of this connection last joined the channel. The fields of the updates must be the equal to the first time the update was sent out. The initial event of the user that requested the backfill joining the channel cannot be sent back.
+1. Following this, updates are sent back to the connection the update came from. These updates should include all updates that were distributed to users in the channel, spanning from now to an arbitrary point in time that is at most when the user of this connection last joined the channel and at most the specified `since` timestamp. The fields of the updates must be the equal to the first time the update was sent out. The initial event of the user that requested the backfill joining the channel cannot be sent back.
 
 #### 7.2 Data (shirakumo-data)
 Purpose: allows distributing images and other binary payloads.

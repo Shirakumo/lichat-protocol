@@ -1,7 +1,8 @@
 (define-package "shirakumo")
 
 (define-extension "shirakumo-backfill"
-  (define-object shirakumo:backfill (channel-update)))
+  (define-object shirakumo:backfill (channel-update)
+    (:since integer :optional)))
 
 (define-extension "shirakumo-data"
   (define-object shirakumo:data (channel-update)
