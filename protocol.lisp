@@ -325,9 +325,15 @@
 (define-protocol-class unban (target-update)
   ())
 
+(define-protocol-class banned ()
+  ((target :initarg :target :accessor target :slot-type list)))
+
 (define-protocol-class ip-ban ()
   ((ip :initarg :ip :accessor ip :slot-type string)
    (mask :initarg :mask :accessor mask :slot-type string)))
+
+(define-protocol-class ip-banned ()
+  ((target :initarg :target :accessor target :slot-type list)))
 
 (define-protocol-class ip-unban ()
   ((ip :initarg :ip :accessor ip :slot-type string)
@@ -340,6 +346,12 @@
   ())
 
 (define-protocol-class unquiet (channel-update target-update)
+  ())
+
+(define-protocol-class quieted (channel-update)
+  ((target :initarg :target :accessor target :slot-type list)))
+
+(define-protocol-class typing (channel-update)
   ())
 
 ;; Errors
