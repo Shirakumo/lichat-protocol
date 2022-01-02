@@ -52,7 +52,9 @@
 
 (define-extension "shirakumo-quiet"
   (define-object shirakumo:quiet (channel-update target-update))
-  (define-object shirakumo:unquiet (channel-update target-update)))
+  (define-object shirakumo:unquiet (channel-update target-update))
+  (define-object shirakumo:quieted (channel-update)
+    (:target (list string) :optional)))
 
 (define-extension "shirakumo-ip"
   (define-object shirakumo:ip-ban (update)

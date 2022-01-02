@@ -549,6 +549,11 @@ A new update called `unquiet` is introduced. It is a `target-update` and a `chan
 1. The target user is removed from the "quiet list" of the channel.
 1. The update is sent back to the user.
 
+A new update called `quieted` is introduced. It is a `channel-update`. When the server receives a `quieted` update, it must react as follows:
+
+1. The update's `target` field is filled with a list of usernames on the channel's quiet list.
+1. The update is sent back to the user.
+
 #### 7.10 IP (shirakumo-ip)
 Purpose: exposes IP address information and allows management of IPs.
 
