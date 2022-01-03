@@ -354,6 +354,11 @@
 (define-protocol-class typing (channel-update)
   ())
 
+(define-protocol-class react (channel-update)
+  ((emote :initarg :emote :accessor emote :slot-type string)
+   (target :initarg :target :accessor target :slot-type username)
+   (update-id :initarg :update-id :accessor update-id :slot-type id)))
+
 ;; Errors
 (define-protocol-class failure (text-update)
   ())
