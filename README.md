@@ -347,7 +347,7 @@ The extensions outlined in this section are not mandatory and a server or client
 #### 7.1 Backfill (shirakumo-backfill)
 Purpose: allow users to catch up with the contents of a channel should they initiate a new connection which does not currently have access to all the past updates of the channel. 
 
-In order to facilitate this, the server is forced to keep copies of the updates. The server is allowed to only keep updates for a certain duration, or only a certain number of total updates. In order to avoid spying, the server must not distribute updates that the user did not already receive previously through another connection. The server does not have to make any guarantee about the order in which the updates are sent back to the connection. The client on the other side is responsible for ordering them as appropriate according to the clock.
+In order to facilitate this, the server is forced to keep copies of the updates. The server is allowed to only keep updates for a certain duration, or only a certain number of total updates. In order to avoid spying, the server should not distribute updates that the user did not already receive previously through another connection. The server does not have to make any guarantee about the order in which the updates are sent back to the connection. The client on the other side is responsible for ordering them as appropriate according to the clock.
 
 A new update type called `backfill` is introduced, which is a `channel-update` and has an extra, optional field called `since` which should be a universal-time timestamp. If the server receives such an update from a connection, it reacts as follows:
 
