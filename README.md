@@ -393,6 +393,7 @@ If the server receives an `emotes` update from a connection, it reacts as follow
 1. If the channel is anonymous or wasn't created by a registered user, an `insufficient-permissions` update is sent back and the request is dropped.
 1. The server computes a set difference between the known emote names for the channel, and the names listed in the event's `names` slot. Emote names are case-insensitive.
 1. For each emote in the calculated set, the server sends back an `emote` update, where the `name` is set to the emote's name, the `channel` to the channel, and the `payload` is set to the base-64 encoded image representing the emote. The `content-type` must be set accordingly.
+1. The server sends back the original `emotes` update, having set the `names` field to the list of known emotes for this channel.
 
 If the server receives an `emote` update from a connection, it reacts as follows:
 
@@ -405,9 +406,9 @@ If the server receives an `emote` update from a connection, it reacts as follows
 
 When the client receives an `emote` update from the server, it reacts as follows:
 
-1. The `payload` and `content-type` are associated with the `name` and persisted on the client. When the client sends an `emotes` event it to the server it should include the name of this emote in the `names` list.
+1. The `payload` and `content-type` are associated with the `name` and `channel`, and are persisted on the client. When the client sends an `emotes` event for the channel to the server it should include the name of this emote in the `names` list.
 
-When the client sees a `message` update, every match of the regex `:([^:]+):` in the `text` where the group matched by the regex is the name of an emote from the known list of emotes, then the match of the regex should be displayed to the user by an image of the emote's image.
+When the client sees a `message` update, every match of the regex `:([^:]+):` in the `text` where the group matched by the regex is the name of an emote from the known list of emotes for the current channel or the primary channel, then the match of the regex should be displayed to the user by an image of the emote's image.
 
 #### 7.4 Edit (shirakumo-edit)
 Purpose: allows users to make retroactive edits to their messages.
@@ -435,9 +436,7 @@ Specifically, an update requesting ``foo`` should list ``foo/bar``, but not ``fo
 
 Clients that support this extension are required to implement the following special semantic: if a user uses a command that requires a channel name, and the user begins the channel name with a forward slash, the client should automatically prepend the current channel name to the specified channel name, if there is a channel that is considered "current". If no channel is explicitly current, the primary channel is considered current.
 
-If the server also supports the `shirakumo-emotes` extension, it should set the default permission for `emote` updates to nobody.
-
-If the client also supports the `shirakumo-emotes` extension, it should make sure that emotes from the top ancestor channel are available in any descendant channel.
+If the client also supports the `shirakumo-emotes` extension, it should make sure that emotes from ancestor channels are available in any descendant channel.
 
 #### 7.6 Channel Info (shirakumo-channel-info)
 Purpose: allows associating metadata with channels such as the set of rules, a topic, and so forth.
