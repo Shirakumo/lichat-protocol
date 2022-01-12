@@ -353,6 +353,7 @@ A new update type called `backfill` is introduced, which is a `channel-update` a
 
 1. If the user is not in the named channel, a `not-in-channel` update is sent back and the request is dropped.
 1. Following this, updates are sent back to the connection the update came from. These updates should include all updates that were distributed to users in the channel, spanning from now to an arbitrary point in time that is at most when the user of this connection last joined the channel and at most the specified `since` timestamp. The fields of the updates must be the equal to the first time the update was sent out. The initial event of the user that requested the backfill joining the channel cannot be sent back.
+1. The original update is sent back to the user to indicate end of backfill.
 
 #### 7.2 Data (shirakumo-data)
 Purpose: allows distributing images and other binary payloads.
