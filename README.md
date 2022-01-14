@@ -179,7 +179,7 @@ An update is always checked as follows:
 
 1. If the update is not at all recognisable and cannot be parsed, a `malformed-update` update is sent back and the request is dropped.
 1. If the update is too long (contains too many characters), a `update-too-long` update is sent back and the request is dropped.
-1. If the class of the update is not known or not a subclass of `wire-object`, an `invalid-update` update is sent back and the request is dropped.
+1. If the class of the update is not known or not a subclass of `update`, an `invalid-update` update is sent back and the request is dropped.
 1. If the `from`, `channel`, or ` target` fields contain an invalid name, a `bad-name` update is sent back and the request is dropped.
 1. If the `from` field does not match the name known to the server by the user associated to the connection, a `username-mismatch` update is sent back and the request is dropped.
 1. If the `channel` field denotes a channel that does not exist, but must, a `no-such-channel` update is sent back and the request is dropped.
