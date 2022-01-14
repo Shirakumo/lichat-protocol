@@ -1,135 +1,135 @@
 (define-package "shirakumo")
 
 (define-extension "shirakumo-backfill"
-  (define-object shirakumo:backfill (channel-update)
+  (define-object shirakumo:backfill (lichat:channel-update)
     (:since integer :optional)))
 
 (define-extension "shirakumo-data"
-  (define-object shirakumo:data (channel-update)
+  (define-object shirakumo:data (lichat:channel-update)
     (:content-type string)
     (:filename string :optional)
     (:payload string))
-  (define-object shirakumo:bad-content-type (update-failure)
+  (define-object shirakumo:bad-content-type (lichat:update-failure)
     (:allowed-content-types (list string))))
 
 (define-extension "shirakumo-emote"
-  (define-object shirakumo:emotes (channel-update)
+  (define-object shirakumo:emotes (lichat:channel-update)
     (:names (list string) :optional))
-  (define-object shirakumo:emote (channel-update)
+  (define-object shirakumo:emote (lichat:channel-update)
     (:content-type string)
     (:name string)
     (:payload string))
-  (define-object shirakumo:emote-list-full (update-failure)))
+  (define-object shirakumo:emote-list-full (lichat:update-failure)))
 
 (define-extension "shirakumo-edit"
-  (define-object shirakumo:edit (message)))
+  (define-object shirakumo:edit (lichat:message)))
 
 (define-extension "shirakumo-channel-trees"
-  (define-object-extension channels ()
+  (define-object-extension lichat:channels ()
     (:channel string :optional))
-  (define-object shirakumo:no-such-parent-channel (update-failure)))
+  (define-object shirakumo:no-such-parent-channel (lichat:update-failure)))
 
 (define-extension "shirakumo-channel-info"
-  (define-object shirakumo:channel-info (channel-update)
+  (define-object shirakumo:channel-info (lichat:channel-update)
     (:keys (or (list symbol) T)))
-  (define-object shirakumo:set-channel-info (channel-update text-update)
+  (define-object shirakumo:set-channel-info (lichat:channel-update text-update)
     (:key symbol))
-  (define-object shirakumo:no-such-channel-info (update-failure)
+  (define-object shirakumo:no-such-channel-info (lichat:update-failure)
     (:key symbol))
-  (define-object shirakumo:malformed-channel-info (update-failure)))
+  (define-object shirakumo:malformed-channel-info (lichat:update-failure)))
 
 (define-extension "shirakumo-server-management"
-  (define-object shirakumo:kill (target-update))
-  (define-object shirakumo:destroy (channel-update))
-  (define-object shirakumo:ban (target-update))
-  (define-object shirakumo:unban (target-update))
-  (define-object shirakumo:blacklist ()
+  (define-object shirakumo:kill (lichat:target-update))
+  (define-object shirakumo:destroy (lichat:channel-update))
+  (define-object shirakumo:ban (lichat:target-update))
+  (define-object shirakumo:unban (lichat:target-update))
+  (define-object shirakumo:blacklist (lichat:update)
     (:target (list string) :optional))
 
 (define-extension "shirakumo-pause"
-  (define-object shirakumo:pause (channel-update)
+  (define-object shirakumo:pause (lichat:channel-update)
     (:by integer)))
 
 (define-extension "shirakumo-quiet"
-  (define-object shirakumo:quiet (channel-update target-update))
-  (define-object shirakumo:unquiet (channel-update target-update))
-  (define-object shirakumo:quieted (channel-update)
+  (define-object shirakumo:quiet (lichat:channel-update target-update))
+  (define-object shirakumo:unquiet (lichat:channel-update target-update))
+  (define-object shirakumo:quieted (lichat:channel-update)
     (:target (list string) :optional)))
 
 (define-extension "shirakumo-ip"
-  (define-object shirakumo:ip-ban (update)
+  (define-object shirakumo:ip-ban (lichat:update)
     (:ip string)
     (:mask string))
-  (define-object shirakumo:ip-unban (update)
+  (define-object shirakumo:ip-unban (lichat:update)
     (:ip string)
     (:mask string))
-  (define-object shirakumo:ip-blacklist ()
+  (define-object shirakumo:ip-blacklist (lichat:update)
     (:target (list (list string)) :optional))
-  (define-object shirakumo:bad-ip-format (update-failure)))
+  (define-object shirakumo:bad-ip-format (lichat:update-failure)))
 
 (define-extension "shirakumo-bridge"
-  (define-object shirakumo:bridge (channel-update))
-  (define-object-extension channel-update ()
+  (define-object shirakumo:bridge (lichat:channel-update))
+  (define-object-extension lichat:channel-update ()
     (shirakumo:bridge string :optional)))
 
 (define-extension "shirakumo-link"
-  (define-object-extension message ()
+  (define-object-extension lichat:message ()
     (shirakumo:link string :optional)))
 
 (define-extension "shirakumo-markup"
-  (define-object-extension text-update ()
+  (define-object-extension lichat:text-update ()
     (shirakumo:rich string :optional)
     (shirakumo:markup string :optional)))
 
 (define-extension "shirakumo-user-info"
-  (define-object shirakumo:set-user-info (text-update)
+  (define-object shirakumo:set-user-info (lichat:text-update)
     (:key string))
-  (define-object-extension user-info ()
+  (define-object-extension lichat:user-info ()
     (shirakumo:info list :optional))
-  (define-object shirakumo:malformed-user-info (update-failure))
-  (define-object shirakumo:no-such-user-info (update-failure)
+  (define-object shirakumo:malformed-user-info (lichat:update-failure))
+  (define-object shirakumo:no-such-user-info (lichat:update-failure)
     (:key symbol)))
 
 (define-extension "shirakumo-shared-identity"
-  (define-object shirakumo:share-identity (update)
+  (define-object shirakumo:share-identity (lichat:update)
     (:key string :optional))
-  (define-object shirakumo:unshare-identity (update)
+  (define-object shirakumo:unshare-identity (lichat:update)
     (:key string :optional))
-  (define-object shirakumo:list-shared-identities (update)
+  (define-object shirakumo:list-shared-identities (lichat:update)
     (:identities list :optional))
-  (define-object shirakumo:assume-identity (target-update)
+  (define-object shirakumo:assume-identity (lichat:target-update)
     (:key string)))
 
 (define-extension "shirakumo-sign"
-  (define-object-extension update ()
+  (define-object-extension lichat:update ()
     (shirakumo:signature string :optional)))
 
 (define-extension "shirakumo-history"
-  (define-object shirakumo:search (channel-update)
+  (define-object shirakumo:search (lichat:channel-update)
     (:results list :optional)
     (:offset integer :optional)
     (:query list :optional)))
 
 (define-extension "shirakumo-block"
-  (define-object shirakumo:block (target-update))
-  (define-object shirakumo:unblock (target-update))
-  (define-object shirakumo:blocked ()
+  (define-object shirakumo:block (lichat:target-update))
+  (define-object shirakumo:unblock (lichat:target-update))
+  (define-object shirakumo:blocked (lichat:update)
     (:target (list string) :optional))
 
 (define-extension "shirakumo-reactions"
-  (define-object shirakumo:react (channel-update)
+  (define-object shirakumo:react (lichat:channel-update)
     (:target string)
     (:update-id id)
     (:emote string)))
 
 (define-extension "shirakumo-replies"
-  (define-object-extension message ()
+  (define-object-extension lichat:message ()
     (shirakumo:reply-to list :optional)))
 
 (define-extension "shirakumo-last-read"
-  (define-object shirakumo:last-read (channel-update)
+  (define-object shirakumo:last-read (lichat:channel-update)
     (:target string :optional)
     (:update-id id :optional)))
 
 (define-extension "shirakumo-typing"
-  (define-object shirakumo:typing (channel-update)))
+  (define-object shirakumo:typing (lichat:channel-update)))
