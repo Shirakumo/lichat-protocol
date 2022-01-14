@@ -24,4 +24,5 @@
                (:file "documentation"))
   :depends-on (:documentation-utils
                :closer-mop
+               :trivial-package-local-nicknames
                #-sbcl :cl-unicode))

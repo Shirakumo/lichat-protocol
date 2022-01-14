@@ -10,6 +10,7 @@
 (defvar *errors* NIL)
 (defvar *invalid-symbol* (make-symbol "INVALID-SYMBOL"))
 (defvar *read-limit* NIL)
+(defvar *read-import* NIL)
 (defvar *read-counter*)
 
 (defun lread (stream &optional eof)
@@ -38,13 +39,21 @@
         while (find char *whitespace*)
         finally (lunread char stream)))
 
-(defun safe-find-symbol (name package)
-  (let ((package (find-package package)))
-    (if (string= name "NIL")
-        NIL
-        (or (find-symbol name package)
-            (progn (push (make-condition 'unknown-symbol :symbol-designator (cons (package-name package) name)) *errors*)
-                   *invalid-symbol*)))))
+(defun safe-find-symbol (name package-name)
+  (let ((package (if (string-equal package-name "keyword")
+                     (find-package "KEYWORD")
+                     (cdr (assoc package-name (pln:package-local-nicknames '#:org.shirakumo.lichat.protocol.packages)
+                                 :test #'string-equal))))
+        (name (string-upcase name)))
+    (cond ((null package)
+           (push (make-condition 'unknown-symbol :symbol-designator (cons package-name name)) *errors*)
+           *invalid-symbol*)
+          (*read-import*
+           (intern name package))
+          (T
+           (or (find-symbol name package)
+               (progn (push (make-condition 'unknown-symbol :symbol-designator (cons (package-name package) name)) *errors*)
+                      *invalid-symbol*))))))
 
 (defun read-sexpr-list (stream)
   (prog1 (loop do (skip-whitespace stream)
@@ -62,7 +71,7 @@
                (T   (write-char char out))))))
 
 (defun read-sexpr-keyword (stream)
-  (safe-find-symbol (read-sexpr-token stream) :keyword))
+  (safe-find-symbol (read-sexpr-token stream) "keyword"))
 
 (defun read-sexpr-number (stream)
   (let ((out (make-string-output-stream))
@@ -99,11 +108,9 @@
   (let ((token (read-sexpr-token stream)))
     (cond ((eql #\: (lpeek stream))
            (lread stream)
-           (if (string= token "#")
-               (make-symbol (read-sexpr-token stream))
-               (safe-find-symbol (read-sexpr-token stream) (find-package token))))
+           (safe-find-symbol (read-sexpr-token stream) token))
           (T
-           (safe-find-symbol token #.*package*)))))
+           (safe-find-symbol token "lichat")))))
 
 (defun skip-to-null (stream)
   (loop until (char= #\Null (read-char stream NIL #\Null))))

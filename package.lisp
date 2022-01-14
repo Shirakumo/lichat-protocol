@@ -7,7 +7,10 @@
 (in-package #:cl-user)
 (defpackage #:lichat-protocol
   (:nicknames #:org.shirakumo.lichat.protocol)
+  (:local-nicknames
+   (#:pln #:trivial-package-local-nicknames))
   (:use #:cl)
+  (:shadow #:search #:block)
   ;; conditions.lisp
   (:export
    #:protocol-condition
@@ -178,3 +181,10 @@
    #:check-update-options
    #:from-wire
    #:from-wire*))
+
+(defpackage #:org.shirakumo.lichat.protocol.packages
+  (:use)
+  (:local-nicknames
+   (#:lichat #:org.shirakumo.lichat.protocol)
+   ;; KLUDGE: Servers and clients currently alias these two packages.
+   (#:shirakumo #:org.shirakumo.lichat.protocol)))
