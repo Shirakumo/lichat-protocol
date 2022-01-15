@@ -181,67 +181,48 @@
      (pushnew ,(string-downcase name) *protocol-extensions* :test #'string-equal)
      ,@extensions))
 
+(defun field-definition-to-slot-definition (field)
+  (destructuring-bind (name type &rest args) field
+    (let ((slot-name (intern (string-upcase name) '#:org.shirakumo.lichat.protocol)))
+      (list* slot-name :initarg name
+                       :accessor slot-name
+                       :slot-type type
+                       (unless (find :optional args)
+                         `(:initform (error ,(format NIL "~s required." name))))))))
+
 (defmacro define-object (name superclasses &body fields)
-  `(progn (define-protocol-class ,name ,(or superclasses '(object))
-            ,(loop for (name type . args) in fields
-                   for slot-name = (intern (string-upcase name) '#:org.shirakumo.lichat.protocol)
-                   collect (list* slot-name :initarg name
-                                            :accessor slot-name
-                                            :slot-type type
-                                            (unless (find :optional args)
-                                              `(:initform (error ,(format NIL "~s required." name)))))))))
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (define-protocol-class ,name ,(or superclasses '(object))
+       ,(mapcar #'field-definition-to-slot-definition fields))))
 
 (defmacro define-object-extension (name superclasses &body fields)
-  ())
+  (let ((class (find-class name)))
+    `(define-protocol-class ,name ,(union (remove 'typed-object (mapcar #'class-name (c2mop:class-direct-superclasses class)))
+                                          superclasses)
+       (,@(loop for slot in (c2mop:class-direct-slots class)
+                do (setf fields (remove (first (c2mop:slot-definition-initargs slot))
+                                        fields :key #'first))
+                collect (list* (c2mop:slot-definition-name slot)
+                               :initarg (first (c2mop:slot-definition-initargs slot))
+                               :accessor (first (c2mop:slot-definition-readers slot))
+                               :slot-type (slot-type slot)
+                               (when (c2mop:slot-definition-initform slot)
+                                 `(:initform ,(c2mop:slot-definition-initform slot)))))
+        ,@(mapcar #'field-definition-to-slot-definition fields)))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun read-protocol-file (file)
-    (with-open-file (stream (merge-pathnames file #.(or *compile-file-pathname* *load-pathname*)) :direction :input)
-      (let ((*package* (find-package '#:org.shirakumo.lichat.protocol.packages))
-            (*read-import* T)
-            (lines ()))
-        (handler-case
-            (loop for line = (progn (skip-whitespace stream)
-                                    (read-sexpr stream))
-                  do (push line lines)
-                     (when (eql 'define-package (first line))
-                       (eval line)))
-          (end-of-file ()
-            (nreverse lines)))))))
+(defun read-protocol-file (file)
+  (with-open-file (stream (merge-pathnames file #.(or *compile-file-pathname* *load-pathname*)) :direction :input)
+    (let ((*package* (find-package '#:org.shirakumo.lichat.protocol.packages))
+          (*read-import* T)
+          (lines ()))
+      (handler-case
+          (loop for line = (progn (skip-whitespace stream)
+                                  (read-sexpr stream))
+                do (push line lines)
+                   (when (eql 'define-package (first line))
+                     (eval line)))
+        (end-of-file ()
+          (nreverse lines))))))
 
 (defmacro define-from-protocol-file (file)
   `(progn ,@(read-protocol-file file)))
-
-(define-from-protocol-file "lichat.sexpr")
-(define-from-protocol-file "shirakumo.sexpr")
-
-(defmethod print-object ((update update) stream)
-  (print-unreadable-object (update stream :type T)
-    (format stream "~s ~a ~s ~a" :from (maybe-sval update 'from)
-                                 :id (maybe-sval update 'id))))
-
-(defmethod print-object ((update channel-update) stream)
-  (print-unreadable-object (update stream :type T)
-    (format stream "~s ~a ~s ~a ~s ~a"
-            :from (maybe-sval update 'from)
-            :channel (maybe-sval update 'channel)
-            :id (maybe-sval update 'id))))
-
-(defmethod print-object ((update target-update) stream)
-  (print-unreadable-object (update stream :type T)
-    (format stream "~s ~a ~s ~a ~s ~a"
-            :from (maybe-sval update 'from)
-            :target (maybe-sval update 'target)
-            :id (maybe-sval update 'id))))
-
-(defmethod print-object ((update text-update) stream)
-  (print-unreadable-object (update stream :type T)
-    (format stream "~s ~a ~s ~a ~s ~s" :from (maybe-sval update 'from)
-                                       :id (maybe-sval update 'id)
-                                       :text (maybe-sval update 'text))))
-
-(defmethod print-object ((update update-failure) stream)
-  (print-unreadable-object (update stream :type T)
-    (format stream "~s ~a ~s ~a ~s ~a" :from (maybe-sval update 'from)
-                                       :id (maybe-sval update 'id)
-                                       :update-id (maybe-sval update 'update-id))))

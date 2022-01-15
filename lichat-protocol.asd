@@ -20,6 +20,7 @@
                (:file "reader")
                (:file "typed-slot-class")
                (:file "protocol")
+               (:file "base-protocols")
                (:file "wire")
                (:file "documentation"))
   :depends-on (:documentation-utils
