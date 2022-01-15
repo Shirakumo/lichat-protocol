@@ -6,8 +6,8 @@
 
 (in-package #:org.shirakumo.lichat.protocol)
 
-(define-from-protocol-file "lichat.sexpr")
-(define-from-protocol-file "shirakumo.sexpr")
+(define-from-protocol-file "spec/lichat.sexpr")
+(define-from-protocol-file "spec/shirakumo.sexpr")
 
 (defmethod print-object ((update update) stream)
   (print-unreadable-object (update stream :type T)
