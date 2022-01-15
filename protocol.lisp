@@ -183,7 +183,9 @@
 
 (defun field-definition-to-slot-definition (field)
   (destructuring-bind (name type &rest args) field
-    (let ((slot-name (intern (string-upcase name) '#:org.shirakumo.lichat.protocol)))
+    (let ((slot-name (if (eql (find-package "KEYWORD") (symbol-package name))
+                         (intern (string-upcase name) '#:org.shirakumo.lichat.protocol)
+                         name)))
       (list* slot-name :initarg name
                        :accessor slot-name
                        :slot-type type
@@ -193,22 +195,30 @@
 (defmacro define-object (name superclasses &body fields)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (define-protocol-class ,name ,(or superclasses '(object))
-       ,(mapcar #'field-definition-to-slot-definition fields))))
+       ,(mapcar #'field-definition-to-slot-definition fields))
+     (export ',name ',(package-name (symbol-package name)))
+     ,@(loop for field in fields
+             for accessor = (getf (rest (field-definition-to-slot-definition field)) :accessor)
+             collect `(export ',accessor ',(package-name (symbol-package accessor))))))
 
 (defmacro define-object-extension (name superclasses &body fields)
   (let ((class (find-class name)))
-    `(define-protocol-class ,name ,(union (remove 'typed-object (mapcar #'class-name (c2mop:class-direct-superclasses class)))
-                                          superclasses)
-       (,@(loop for slot in (c2mop:class-direct-slots class)
-                do (setf fields (remove (first (c2mop:slot-definition-initargs slot))
-                                        fields :key #'first))
-                collect (list* (c2mop:slot-definition-name slot)
-                               :initarg (first (c2mop:slot-definition-initargs slot))
-                               :accessor (first (c2mop:slot-definition-readers slot))
-                               :slot-type (slot-type slot)
-                               (when (c2mop:slot-definition-initform slot)
-                                 `(:initform ,(c2mop:slot-definition-initform slot)))))
-        ,@(mapcar #'field-definition-to-slot-definition fields)))))
+    `(progn
+       (define-protocol-class ,name ,(union (remove 'typed-object (mapcar #'class-name (c2mop:class-direct-superclasses class)))
+                                            superclasses)
+         (,@(loop for slot in (c2mop:class-direct-slots class)
+                  do (setf fields (remove (first (c2mop:slot-definition-initargs slot))
+                                          fields :key #'first))
+                  collect (list* (c2mop:slot-definition-name slot)
+                                 :initarg (first (c2mop:slot-definition-initargs slot))
+                                 :accessor (first (c2mop:slot-definition-readers slot))
+                                 :slot-type (slot-type slot)
+                                 (when (c2mop:slot-definition-initform slot)
+                                   `(:initform ,(c2mop:slot-definition-initform slot)))))
+          ,@(mapcar #'field-definition-to-slot-definition fields)))
+       ,@(loop for field in fields
+               for accessor = (getf (rest (field-definition-to-slot-definition field)) :accessor)
+               collect `(export ',accessor ',(package-name (symbol-package accessor)))))))
 
 (defun read-protocol-file (file)
   (with-open-file (stream (merge-pathnames file #.(or *compile-file-pathname* *load-pathname*)) :direction :input)
