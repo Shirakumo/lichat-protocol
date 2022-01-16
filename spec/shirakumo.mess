@@ -1,0 +1,595 @@
+# Shirakumo Extensions
+This document outlines extensions to the Lichat core protocol. As with the core protocol, you can find a machine-readable version in "shirakumo.sexpr"(link shirakumo.sexpr)
+
+## 1. Backfill (shirakumo-backfill)
+Purpose: allow users to catch up with the contents of a channel should they initiate a new connection which does not currently have access to all the past updates of the channel. 
+
+In order to facilitate this, the server is forced to keep copies of the updates. The server is allowed to only keep updates for a certain duration, or only a certain number of total updates. In order to avoid spying, the server should not distribute updates that the user did not already receive previously through another connection. The server does not have to make any guarantee about the order in which the updates are sent back to the connection. The client on the other side is responsible for ordering them as appropriate according to the clock.
+
+A new update type called ``backfill`` is introduced, which is a ``channel-update`` and has an extra, optional field called ``since`` which should be a universal-time timestamp. If the server receives such an update from a connection, it reacts as follows:
+
+1. If the user is not in the named channel, a ``not-in-channel`` update is sent back and the request is dropped.
+2. Following this, updates are sent back to the connection the update came from. These updates should include all updates that were distributed to users in the channel, spanning from now to an arbitrary point in time that is at most when the user of this connection last joined the channel and at most the specified ``since`` timestamp. The fields of the updates must be the equal to the first time the update was sent out. The initial event of the user that requested the backfill joining the channel cannot be sent back.
+3. The original update is sent back to the user to indicate end of backfill.
+
+## 2. Data (shirakumo-data)
+Purpose: allows distributing images and other binary payloads.
+
+A new update type called ``data`` is introduced, which is a ``channel-update``. Additionally, a new ``failure`` type called ``bad-content-type`` is introduced, which is an ``update-failure``. If the server receives a ``data`` update from a connection, it reacts as follows:
+
+1. If the user is not in the named channel, a ``not-in-channel`` update is sent back and the request is dropped.
+2. If the update's ``content-type`` is not accepted by the server, a ``bad-content-type`` update is sent back and the request is dropped.
+3. The user's ``data`` update is distributed to all users in the channel.
+
+The ``data`` update contains three slots, with the following intentions:
+
+- ``content-type`` A string representing the "content type"(https://en.wikipedia.org/wiki/Media_type) of the payload data contained in the update.
+- ``filename`` A string representing an arbitrary name given to the payload data.
+- ``payload`` A base-64 encoded string of binary data payload.
+
+## 3. Emotes (shirakumo-emotes)
+Purpose: introduces server-side emoticons that are distributed to all users for use on the client-side.
+
+Any non-anonymous channel created by a registered user holds an ``emotes`` map. The server may restrict the size of this map. The server should also set the default permissions for ``emotes`` to anyone, and ``emote`` to only the registrant.
+
+Two new update types called ``emotes`` and ``emote`` are introduced, both of which are ``channel-update``s.
+
+The ``emotes`` update contains one extra slot, with the following intentions:
+
+- ``names`` This contains a list of strings denoting the names of emotes the client knows about.
+
+The ``emote`` update contains three extra slots, with the following intentions:
+
+- ``content-type`` A string representing the "content type"(https://en.wikipedia.org/wiki/Media_type) of the emote image contained in the update.
+- ``name`` A string representing the name of the emote.
+- ``payload`` A base-64 encoded string of binary data payload.
+
+If the server receives an ``emotes`` update from a connection, it reacts as follows:
+
+1. If the channel field is missing, the primary channel's name is substituted.
+2. If the user is not in the named channel, a ``not-in-channel`` update is sent back and the request is dropped.
+3. If the channel is anonymous or wasn't created by a registered user, an ``insufficient-permissions`` update is sent back and the request is dropped.
+4. The server computes a set difference between the known emote names for the channel, and the names listed in the event's ``names`` slot. Emote names are case-insensitive.
+5. For each emote in the calculated set, the server sends back an ``emote`` update, where the ``name`` is set to the emote's name, the ``channel`` to the channel, and the ``payload`` is set to the base-64 encoded image representing the emote. The ``content-type`` must be set accordingly.
+6. The server sends back the original ``emotes`` update, having set the ``names`` field to the list of known emotes for this channel.
+
+If the server receives an ``emote`` update from a connection, it reacts as follows:
+
+1. If the user is not in the named channel, a ``not-in-channel`` update is sent back and the request is dropped.
+2. If the ``name`` is not yet contained in the channel's ``emotes`` map, and the map already matches the size restriction of the server, an ``emote-list-full`` update is sent back and the request is dropped.
+3. If the ``content-type`` is not acceptable, an update of type ``bad-content-type`` is sent back and the request is dropped.
+4. If the payload exceeds internal limits, an update of type ``update-too-long`` is sent back and the request is dropped.
+5. If the payload is empty, the emote is removed, and otherwise the emote data is stored in the channel's ``emotes`` map.
+6. The ``emote`` update is distributed to all users in the channel.
+
+When the client receives an ``emote`` update from the server, it reacts as follows:
+
+1. The ``payload`` and ``content-type`` are associated with the ``name`` and ``channel``, and are persisted on the client. When the client sends an ``emotes`` event for the channel to the server it should include the name of this emote in the ``names`` list.
+
+When the client sees a ``message`` update, every match of the regex ``:([^:]+):`` in the ``text`` where the group matched by the regex is the name of an emote from the known list of emotes for the current channel or the primary channel, then the match of the regex should be displayed to the user by an image of the emote's image.
+
+## 4. Edit (shirakumo-edit)
+Purpose: allows users to make retroactive edits to their messages.
+
+A new update type called ``edit`` is introduced, which is a ``message``. If the server receives an ``edit`` update it acts in the same way as a regular ``message`` event. No additional support from the server is required outside of recognising and accepting the type.
+
+When the client sees an ``edit`` update, it should change the ``text`` of the ``message`` update with the same ``from`` and ``id`` fields to the one from the ``edit`` update. Ideally a user interface for Lichat should also include an indication that the previous message event has been changed, including perhaps even a history of all the potential edits of a message.
+
+If the client receives an ``edit`` update whose ``id`` and ``from`` fields do not refer to any previous ``message`` update, the client should simply ignore the update.
+
+## 5. Channel Trees (shirakumo-channel-trees)
+Purpose: enforces a structure on channels and allows creating channel hierarchies for easier grouping.
+
+A new convention for channel names is introduced. §2.4.4 is restricted further in the following manner: forward slash characters (``U+002F``) may only occur between two other characters that are not a forward slash character.
+
+Generally for a ``channel-update``, the following terminology is introduced: the ``parent channel`` is a channel with the name of the current channel up to and excluding the last forward slash character in the name. If no forward slash occurs in the name, the primary channel is considered the parent channel.
+
+A new error ``no-such-parent-channel`` is introduced. It is an ``update-failure``.
+
+§5.3.1 is modified as follows: instead of point ``1``: If the parent channel does not exist, the server responds with a ``no-such-parent-channel`` update and drops the request. If the parent channel exists, the update is checked for permissions by the parent channel.
+
+§5.5.1 is modified as follows: the ``channels`` update is upgraded to a ``channel-update`` and as such contains a ``channel`` field. When processing the ``channels`` update, the server should only process channels whose names begin with the name mentioned in the ``channel`` field followed by a forward slash and do not contain any further forward slashes.
+
+Specifically, an update requesting ``foo`` should list ``foo/bar``, but not ``foo/bar/baz``.
+
+Clients that support this extension are required to implement the following special semantic: if a user uses a command that requires a channel name, and the user begins the channel name with a forward slash, the client should automatically prepend the current channel name to the specified channel name, if there is a channel that is considered "current". If no channel is explicitly current, the primary channel is considered current.
+
+If the client also supports the ``shirakumo-emotes`` extension, it should make sure that emotes from ancestor channels are available in any descendant channel.
+
+## 6. Channel Info (shirakumo-channel-info)
+Purpose: allows associating metadata with channels such as the set of rules, a topic, and so forth.
+
+Channels receive extra metadata fields that can be set set by users. To this end, channels must keep a table of ``metadata`` to track. The server must restrict the valid keys in that table, and may restrict the content of values associated with each key. The following keys must always be available, with the specified intended purposes:
+
+- ``:news`` Updates and latest news by channel administrators
+- ``:topic`` A description of the general discussion topic of the channel
+- ``:rules`` A Description of the rules that need to be followed by channel members
+- ``:contact`` Information on how to reach contact persons for administrative problems
+- ``:url`` Some kind of URL to a website representing the channel
+
+A new update called ``channel-info`` is introduced. It is a ``channel-update`` and holds a ``keys`` field that can either be ``T`` or a list of keys as symbols describing the info to fetch.
+
+A new update called ``set-channel-info`` is introduced. It is a ``channel-update`` and a ``text-update``, and holds a ``key`` field that must be a symbol describing the info to set.
+
+A new error ``no-such-channel-info`` is introduced. It is an ``update-failure`` and contains the additional field ``key``, which must hold a symbol.
+
+A new error ``malformed-channel-info`` is introduced. It is an ``update-failure``.
+
+When the server receives a ``channel-info`` update, it must react as follows:
+
+1. For each of the requested keys, the server reacts as follows:
+  1. If the key does not exist, the server replies with a ``no-such-channel-info`` failure with the according ``key`` set, and the ``id`` set to the ``id`` of the original update.
+  2. Otherwise, the server replies with a ``set-channel-info`` update with the same ``id`` as the request, ``key`` set to the current key being requested, and ``text`` being set to the key's value.
+
+When the server receives a ``set-channel-info`` update, it must react as follows:
+
+1. If the specified ``key`` is not accepted by the server, it replies with a ``no-such-channel-info`` error and drops the update.
+2. If the specified ``text`` is not of the correct format for the given ``key``, it replies with a ``malformed-channel-info`` error and drops the update.
+3. The internal channel metadata is updated to associate the given ``key`` with the given ``text``.
+4. The user's ``set-channel-info`` update is distributed to all users in the channel.
+
+## 7. Server Management (shirakumo-server-management)
+Purpose: adds capabilities for administrative actions like deleting users and channels.
+
+The server now holds an additional property, a ``blacklist``, which is a set of usernames.
+
+§4.1 is modified to include the following step after §4.1.4 (Checking for name validity):
+
+1. If the name is part of the ``blacklist`` set, a ``too-many-connections`` update is returned and the connection is closed.
+
+A new update called ``kill`` is introduced. It is a ``target-update``. When the server receives a ``kill`` update, it must react as follows:
+
+1. If there is no user with a name corresponding to the ``target``, the server replies with a ``no-such-user`` error and drops the update.
+2. The user is removed from all channels it is in.
+3. All connections the user is associated with are disconnected.
+4. The update is sent back to the user.
+
+A new update called ``destroy`` is introduced. It is a ``channel-update``. When the server receives a ``destroy`` update, it must react as follows:
+
+1. Unlike standard updates, the permission for the update must be checked against the primary channel, rather than the channel the update is targeting.
+2. If there is no channel with a name corresponding to the ``channel``, the server replies with a ``no-such-channel`` error and drops the update.
+3. A ``leave`` update for the channel is sent to every user in the channel.
+4. The channel is removed.
+5. The update is sent back to the user.
+
+A new update called ``ban`` is introduced. It is a ``target-update``. When the server receives a ``ban`` update, it must react as follows:
+
+1. The ``target`` is added to the ``blacklist`` set.
+2. If a user with the ``target`` name is present, the user is removed from all channels it is in.
+3. All connections the user is associated with are disconnected.
+4. The update is sent back to the user.
+
+A new update called ``unban`` is introduced. It is a ``target-update``. When the server receives an ``unban`` update, it must react as follows:
+
+1. The ``target`` is removed from the ``blacklist`` set.
+2. The update is sent back to the user.
+
+A new update called ``blacklist`` is introduced. When a server receives a ``blacklist`` update, it must react as follows:
+
+1. The update's ``target`` field is set to the list of usernames contained in the ``blacklist``.
+2. The update is sent back to the user.
+
+## 8. Pause (shirakumo-pause)
+Purpose: allows throttling high traffic channels to prevent frequent spam by users.
+
+Channels have a new property, a "pause", as well as a "last update list". Delivery of any ``channel-update`` is modified as follows:
+
+1. If the ``from`` field of the update denotes a user whose entry in the "last update list" is a timestamp that's closer to the current timestamp than the channel's "pause", the server responds with a ``too-many-updates`` error and drops the update.
+2. The current timestamp is placed into the user's entry in the "last update list".
+
+The "pause" is noted in seconds and has a default value of 0. The "last update list" has a default timestamp of 0 for users without an entry.
+
+§5.4.1 (joining of a channel) is modified by adding the following extra step at the end:
+
+1. If the channel's "pause" property is greater than zero, a ``pause`` update is sent to the user with the ``by`` field set to the "pause" time.
+
+A new update called ``pause`` is introduced. It is a ``channel-update`` and has an additional field called ``by``, which must contain an integer in the range [0,infinity[. When the server receives a ``pause`` update, it must react as follows:
+
+1. The channel's "pause" is set to "by".
+2. The update is distributed to all users in the channel.
+
+## 9. Quiet (shirakumo-quiet)
+Purpose: allows placing users onto a quiet list that prevents them from reaching any other users.
+
+Channels have a new property, a "quiet list". Delivery of any ``channel-update`` is modified as follows:
+
+1. If the ``from`` field of the update denotes a user that is on the "quiet list", the update is sent back to that user, but not delivered to the rest of the channel.
+2. Otherwise delivery proceeds as normal.
+
+A new update called ``quiet`` is introduced. It is a ``target-update`` and a ``channel-update``. When the server receives a ``quiet`` update, it must react as follows:
+
+1. The target user is placed onto the "quiet list" of the channel.
+2. The update is sent back to the user.
+
+A new update called ``unquiet`` is introduced. It is a ``target-update`` and a ``channel-update``. When the server receives an ``unquiet`` update, it must react as follows:
+
+1. The target user is removed from the "quiet list" of the channel.
+2. The update is sent back to the user.
+
+A new update called ``quieted`` is introduced. It is a ``channel-update``. When the server receives a ``quieted`` update, it must react as follows:
+
+1. The update's ``target`` field is filled with a list of usernames on the channel's quiet list.
+2. The update is sent back to the user.
+
+## 10. IP (shirakumo-ip)
+Purpose: exposes IP address information and allows management of IPs.
+
+Connections now have an additional property, the ``ip``, which must be an IPv6 address. If the connection is established over IPv4, the ``ip`` should nevertheless be the IPv6 representation of this address.
+
+The server has an additional property, an ``ip-blacklist``, which is a set of IP addresses and masks as described below.
+
+§4.1 is modified to include the following step before all others:
+
+1. If the IP address the connection is coming from matches one from the ``ip-blacklist``, the connection is immediately dropped.
+
+An IP address ``a`` is considered the "same" as an IP address ``b`` under the mask ``m``, if the bitwise AND of ``a`` and ``b`` with the bitwise inversion of ``m`` equals the same (``a & !m == b & !m``). The purpose of the mask is to allow addressing entire subnets.
+
+A new update called ``ip-ban`` is introduced. It holds the required field ``ip`` and the optional field ``mask``. If ``mask`` is not given, it should be assumed to be an IP address that is all 1s. Both the ``ip`` and ``mask`` field must be strings in either IPv4 or IPv6 format. When the server receives an ``ip-ban`` update, it must react as follows:
+
+1. If either ``ip`` or ``mask`` do not designate IPv4 or IPv6 addresses, a ``bad-ip-format`` failure is sent and the update is dropped.
+2. Scan through the existing ``ip-blacklist`` and for each:
+   1. if the IP matches ``ip`` under ``mask``:
+      1. if the mask is greater (thus more general) than ``mask``, the update is dropped
+      2. otherwise the entry is removed.
+3. The entry of ``ip`` and ``mask`` is added to the blacklist.
+4. Any connection matching the new entry is dropped.
+5. The update is sent back to the user.
+
+A new update called ``ip-unban`` is introduced. It holds the same fields as ``ip-ban``. When the server receives an ``ip-unban`` update, it must react as follows:
+
+1. Scan through the existing ``ip-blacklist`` and for each:
+   1. if the IP matches ``ip`` under ``mask``:
+      1. if the mask is greater than or equal to ``mask``, the entry is removed.
+2. The update is sent back to the user.
+
+A new connection attribute called ``shirakumo:ip`` is introduced, which is a string showing the IP address from which the connection originates.
+
+A new update called ``ip-blacklist`` is introduced. When a server receives an ``ip-blacklist`` update, it must react as follows:
+
+1. The update's ``target`` field is set to the list of IP addresses and masks contained in the ``ip-blacklist``.
+2. The update is sent back to the user.
+
+## 11. Bridge (shirakumo-bridge)
+Purpose: allows bridging chat channels from external services by sending messages on behalf of other users.
+
+A new, optional field ``:bridge`` is added to all ``channel-update``s. Handling of ``channel-update``s is modified as follows, after the check of §5.1.6 (``channel`` existence check):
+
+1. If the ``bridge`` field is set:
+   1. If the user is not in the channel, a ``not-in-channel`` failure is sent back and the update is dropped.
+   2. If the user does not have the permission to send a ``bridge`` update in the channel, an ``insufficient-permissions`` failure is sent back and the update is dropped.
+   3. The values of the ``bridge`` and ``from`` fields are swapped.
+   4. If the update would be delivered to all members of the channel ignoring all validity checks (it is not an update made for side-effects), then the update is sent to all members of the channel.
+   5. The update is dropped.
+
+The server may choose to discard the ``bridge`` field for any number of update types, but must in the very least support ``message``.
+
+A new update called ``bridge`` is introduced. It is a ``channel-update``. When the server receives a ``bridge`` update, it must react as follows:
+
+1. The update is sent back to the user.
+
+## 12. Link (shirakumo-link)
+Purpose: allows storing data server-side to deliver it in a more efficient out-of-band fashion.
+
+Clients and servers implementing this extension must also implement the ``shirakumo-data`` extension.
+
+A new field called ``shirakumo:link`` is added to the ``message`` update.
+
+When the server receives a ``data`` update, it must instead of §7.2.3 (distributing the update) act as follows:
+
+1. The data payload is saved somewhere, such that it is publicly accessible through an HTTP or HTTPS URL.
+2. A new ``message`` update is generated from the ``data`` update, with the ``text`` being the public URL of the payload, and the ``shirakumo:link`` attribute containing the content-type.
+3. The new ``message`` update is distributed to the channel.
+4. The update is dropped
+
+The server may opt to make saved data payloads inaccessible after a time. The server should take care to generate URLs for the data payloads that are not guessable, which is to say a user cannot reliably generate URLs to access a payload. The server must serve the payload with the requested ``content-type`` set, and the ``content-disposition`` header may be set to include the requested filename in the update. The server must delete all data payloads if a channel is deleted (due to expiration or otherwise). The server may merge payloads that designate the same (byte-identical) files to the same URL.
+
+When the client receives a ``link`` update, it must, as far as possible, embed the linked payload to display it directly. If it cannot display the payload directly, it may instead display the URL to which the link points.
+
+## 13. Markup (shirakumo-markup)
+Purpose: allows using different markup languages to stylise the text in ``text-update``s.
+
+``text-update``s all receive the following additional fields:
+
+- ``rich`` A ``string`` containing a version of the text with markup information included. The ``text`` field must be set to the same text as this field, but with all markup information stripped away.
+- ``markup`` A ``string`` identifying the markup that is used in the rich text.
+
+When a client receives a ``text-update`` it should check the ``markup`` field and determine whether it supports rendering the given format. If it is supported, the client should render the text according to the ``rich`` contents instead of the ``text`` contents. The client may ignore parts of the rich text if it considers the markup unsuitable. If the markup contains errors, the client must fall back to displaying the unformatted ``text`` instead.
+
+The following markup formats are officially recognised, though others may be used:
+
+- ``html`` HTML5 content
+- ``markless`` "Markless"(https://shirakumo.github.io/markless)
+- ``markdown`` "Markdown"(https://daringfireball.net/projects/markdown/syntax)
+- ``org`` "org-mode"(https://orgmode.org)
+- ``rest`` "reStructuredText"(https://docutils.readthedocs.io/en/sphinx-docs/user/rst/quickstart.html)
+
+## 14. User Info (shirakumo-user-info)
+Purpose: allows associating additional information with registered user accounts.
+
+Profiles receive extra metadata fields that can be set set by users. To this end, profiles must keep a table of ``metadata`` to track. The server must restrict the valid keys in that table, and may restrict the content of values associated with each key. The following keys must always be available, with the specified intended purposes:
+
+- ``:birthday`` A textual description of the user's birthday.
+- ``:contact`` Other contact methods, typically email addresses.
+- ``:location`` A textual description of the user's real-world location.
+- ``:public-key`` A PGP public key.
+- ``:real-name`` The user's real-life name.
+- ``:status`` May be ``"away"``, or some arbitrary status description.
+
+The ``user-info`` update is changed to now hold an optional ``info`` field that is an association list.
+
+A new update called ``set-user-info`` is introduced. It is a ``text-update``. It holds a ``key`` field that must be a symbol describing the info to set.
+
+A new error ``no-such-user-info`` is introduced. It is an ``update-failure`` and contains the additional field ``key``, which must hold a symbol.
+
+A new error ``malformed-user-info`` is introduced. It is an ``update-failure``.
+
+When the server receives a ``user-info`` update, it must react as follows, in addition to the standard behaviour described in §5.5.3:
+
+1. If the target user is not registered, this section is ignored.
+2. For each user info key on the user's profile:
+   1. A list composed of the key and the value of the field are added to the ``info`` field of the ``user-info`` reply.
+
+When the server receives a ``set-user-info`` update, it must react as follows:
+
+1. If the target user is not registered, the server replies with a ``no-such-profile`` failure and drops the update.
+2. If the specified ``key`` is not accepted by the server, it replies with a ``no-such-user-info`` error and drops the update.
+3. If the specified ``text`` is not of the correct format for the given ``key``, it replies with a ``malformed-user-info`` error and drops the update.
+4. The internal user metadata is updated to associate the given ``key`` with the given ``text``.
+5. The ``set-user-info`` update is sent back.
+
+## 15. Shared Identity (shirakumo-shared-identity)
+Purpose: allows creating tokens that let other users post updates on behalf of another (registered) user account.
+
+User profiles now have an additional field, a "lending map", which is a map associating keys (strings of at least 16 characters in length) to other usernames, and an "identities list", which is a list of usernames they can send updates on behalf of.
+
+§5.1.5 (``from`` field check) is modified as follows:
+
+1. If the ``from`` field is in the connection's associated profile's "identities list" the ``from`` field check is elided.
+
+A new update called ``share-identity`` is introduced. When the server receives a ``share-identity`` update, it must react as follows:
+
+1. If the user is not registered, a ``no-such-profile`` failure is sent back and the update is dropped.
+2. If the profile already has too many identity shares, an ``identity-already-used`` failure is sent back and the update is dropped.
+3. A new random key is generated and associated with ``nil`` in the profile's lending map.
+4. The update is sent back with the ``key`` field set to the newly generated key.
+
+A new update called ``unshare-identity`` is introduced. When the server receives an ``unshare-identity`` update, it must react as follows:
+
+1. If the user is not registered, a ``no-such-profile`` failure is sent back and the update is dropped.
+2. If the ``key`` is not set, the profile's lending map is emptied and the user's name is removed from all identities lists.
+3. Otherwise, the entry corresponding to the ``key`` is removed from the profile's lending map, and the user's name is removed from the identities list of the user who redeemed the key.
+4. The update is sent back.
+
+A new update called ``list-shared-identities`` is introduced. When the server receives a ``list-shared-identities`` update, it must react as follows:
+
+1. If the user is not registered, a ``no-such-profile`` failure is sent back and the update is dropped.
+2. For every entry in the profile's lending map, the server gather's the key, as well as the username the associated connection is from (or ``nil`` if the key is not associated yet) into a list as for example:
+   ::
+   (("aoeubcoeusasoet425" "test") ("aoestuhau245757Saoeus" NIL))
+   ::
+3. The update is sent back, with the ``shares`` field set to the gathered list, and the ``identities`` field set to the user's identities list.
+
+A new update called ``assume-identity`` is introduced. It is a ``target-update``. When the server receives an ``assume-identity`` update, it must react as follows:
+
+1. If the user is not registered, a ``no-such-profile`` failure is sent back and the update is dropped.
+2. If the target is already on the identities list of the profile, or the user is the target, an ``identity-already-used`` failure is sent back and the update is dropped.
+3. If the ``key`` in the update is either not in the target profile's lending map, or the key is not associated with ``nil``, an ``identity-already-used`` failure is sent back and the update is dropped.
+4. The originating user is associated with the ``key`` in the target profile's map of shares, and the ``target`` is added to the originating profile's identities list.
+5. The update is sent back to the originating connection.
+
+## 16. Icons (shirakumo-icons)
+Purpose: allows associating icons with channels and users.
+
+This extension requires the ``shirakumo-channel-info`` or ``shirakumo-user-info`` extensions.
+
+For channels and users, a new key type is introduced:
+
+- ``:icon`` The value of which must be a base64 encoded image file, with the content type prefixed like so: ``content-type base64``.
+
+The server may reject images that are too large in dimension, or have a bad content-type. The server must in the very least support ``image/png`` and ``image/gif`` as content-types.
+
+## 17. Signing (shirakumo-sign)
+Purpose: allows users to sign their messages with a PGP signature to ensure authenticity of the message.
+
+``update``s now have an additional field, ``signature``. The signature is computed based on the following ``utf-8`` representation of updates:
+
+::
+UPDATE   ::= OBJECT NULL
+OBJECT   ::= '(' SYMBOL (SPACE KEYWORD SPACE EXPR)* ')'
+EXPR     ::= STRING | LIST | SYMBOL | NUMBER
+STRING   ::= '"' ('\' '"' | '\' '\' | !('"' | NULL))* '"'
+LIST     ::= '(' (EXPR (SPACE EXPR)*)? ')'
+SYMBOL   ::= KEYWORD | NAME | NAME ':' NAME
+KEYWORD  ::= ':' NAME
+NUMBER   ::= '0..9'+ ( '.' '0..9'*)?
+NAME     ::= ('\' '\' | '\' TERMINAL | !(TERMINAL | NULL))+
+TERMINAL ::= (':' | ' ' | '"' | '.' | '(' | ')')
+SPACE    ::= U+0020
+NULL     ::= U+0000
+::
+
+This is equivalent to the standard wire format structure and the recommended way of printing, but enforces single space between tokens, no use of backslash escapes unless necessary, and forces a leading digit on numbers, essentially eliminating all ambiguities in the syntax. Additional constraints on printing the update's fields apply:
+
+- The fields must be printed by sorting them according to their unicode codepoints, meaning order is determined by comparing each codepoint in two candidates in turn and sorting the lower codepoint to be before the higher codepoint.
+- The ``signature`` field must be omitted.
+- The ``clock`` and ``from`` fields must be present.
+
+As an example, printing a standard ``message`` update would look as follows:
+
+::
+(message :channel "test" :clock 424742 :id 0 :from "tester" :text "something")
+::
+
+When the server receives a message with the ``signature`` field set, the following constraints apply to §5.1:
+
+- If the ``from`` or ``clock`` fields are not set, a ``malformed-update`` update is sent back and the request is dropped.
+- The server must not adjust the ``clock`` value.
+
+After the signature has been computed from the printed representation, the client should attach it to the ``signature`` field of the update and send it to the server. Clients may then verify the signature using the PGP public key of the user, if known. It is recommended for clients that support this extension to give a visual indicator for signed updates, especially if the signature verification should fail.
+
+A user's pgp key may be retrieved out of band, or using the ``shirakumo-user-info`` ``:public-key`` field if available.
+
+## 18. History (shirakumo-history)
+Purpose: allows users to search through the history of a channel to find relevant messages.
+
+In order to facilitate this, the server must now keep updates in storage, potentially indefinitely. The server is only required to keep updates of type ``message``, but may keep other updates of type ``channel-update`` as well. Of each update stored, the server must store at least the fields ``id``, ``from``, ``clock``, and ``channel``. It may store additional fields, and it may also drop them. This means that the server is not required to fully keep update identity.
+
+A new update type called ``search`` is introduced. It is a ``channel-update``, and holds three additional fields, ``results``, ``offset``, and ``query``. The ``query`` field must hold a list of initargs, meaning alternating symbols and values to describe the keys to match. When the server receives a ``search`` update, it must proceed as follows:
+
+1. If the user is not in the named channel, a ``not-in-channel`` update is sent back and the request is dropped.
+2. It gathers a list of all recorded updates that were posted to the channel specified in the ``search`` update.
+3. For each update in the list:
+   1. The ``query`` field is compared against the update by comparing each initarg in the query to the corresponding field in the update, based on the field's type:
+      - ``time``: The query value must be a list of two elements, being either ``T`` or a ``time`` value, with ``T`` being "any time". The first element designates the lowest possible time to match, and the second the highest possible time to match. This thus designates a range of time values, with the bounds being inclusive.
+      - ``number``: The query value must be a number, and is compared to the candidate value by a standard number equality test.
+      - ``symbol``: The query value must be a symbol, and matches if the candidate is the same symbol.
+      - ``list``: The query value must be another list, and matches the candidate if all of the elements of the query appear in the candidate list, regardless of order. Elements are compared recursively.
+      - ``string``: The query value must be a list of strings, each of them designating a matching spec:
+        ::
+        MATCH        ::= CHAR*
+        CHAR         ::= ESCAPED | ANY | NONE-OR-MORE | character
+        ESCAPED      ::= '\' character
+        ANY          ::= '_'
+        NONE-OR-MORE ::= '*'
+        ::
+        Where ``ANY`` stands for any particular character, and ``NONE-OR-MORE`` stands for an arbitrary number of arbitrary characters. When matching a single "character" with ``ANY``, the Unicode Collation Algorithm rules must be followed. The query value matches if at least one of its strings matches.
+   1. Should any of the fields not match, the update is removed from the list.
+4. The list of updates is sorted in order of their ``clock`` with the lowest being first.
+5. The first N updates are dropped off the list, where N corresponds to number in the ``offset`` field. If ``offset`` is not specified, 0 is assumed.
+6. The first N updates are kept and the rest dropped off the list, where N is an internal server limit, which must be at least 50.
+7. The list of updates is split into multiple lists such that each list can be reliably sent back to the user.
+8. For each list of updates, the list is put into the ``search`` update's ``results`` field and the update is sent back.
+
+The server should provide a means to delete updates from its history to ensure confidential and private information can be removed and is not preserved indefinitely. If the ``search`` update has a permission of ``NIL`` (being denied to everyone) in a channel, the history does not need to be recorded. If a channel expires, its history must be deleted.
+
+The client should provide a convenient means to perform a search query. To this end we also specify a suggested means of formatting queries for end-user input. The query should be specified as freeform text, with the following queryspec format:
+
+::
+QUERY    ::= (FIELD | TOKEN)+
+FIELD    ::= WORD ':' TOKEN
+TOKEN    ::= STRING | WORD
+STRING   ::= '"' ('\' char | !'"') '"'
+WORD     ::= (!TERMINAL)+
+TERMINAL ::= ':' | ' ' | '"'
+::
+
+Where a ``FIELD`` specifies a specific field to match in an update, with the ``WORD`` designating the initarg and the ``TOKEN`` the value. Special 'virtual fields' should be added:
+
+- ``after`` Designates the former element in a ``time`` match for the ``clock`` field. If only ``after`` is specified, the latter element is ``T``. The actual format of the ``TOKEN`` does not have to be an integer, but should be some human-readable datestring.
+- ``before`` Designates the latter element in a ``time`` match for the ``clock`` field. If only ``before`` is specified, the former element is ``T``. The actual format of the ``TOKEN`` does not have to be an integer, but should be some human-readable datestring.
+- ``in`` Designates the ``channel`` field. If not present, the client should infer the channel to use from the current channel.
+
+The ``TOKEN`` should be parsed according to the standard wire format, unless more specific and convenient ways of specifying a fitting value are available. Each ``TOKEN`` than is not part of a ``FIELD``, should designate a matching spec to be part of the list of matching specs for the ``text`` field.
+
+In other words, the following queryspec:
+
+::
+from:tester after:2020-01-01 this "that is" in:test
+::
+
+Should be translated into a search update like this:
+
+::
+(search
+ :id 0
+ :channel "test"
+ :query (:from "tester"
+         :clock (3786825600 T)
+         :text ("this" "that is")))
+::
+
+The client should also offer an easy way to page through the results using the ``offset`` field. The end of the paging may be detected should the server ever return less than 50 results.
+
+If the server also supports the ``shirakumo-backfill`` extension, it may deliver backfill using the history, even if users were not previously in the channel. This poses a privacy risk, but as search is not otherwise restricted anyway, it makes no difference.
+
+## 19. Block (shirakumo-block)
+Purpose: allows users to block other users, preventing seeing their updates. Having this property server-side instead of client-side means it is automatically persisted and synchronised.
+
+Profiles now have a new field: a block list. This is a list of usernames.
+
+Whenever an update is distributed over a channel, the following behaviour must be followed:
+
+1. For each (target) user in the channel:
+  1. If the user noted in the ``from`` field of the update is *not* the block list of the target user's profile:
+  2. The update is sent to all connections associated with the target user.
+
+A new update type called ``block`` is introduced. It is a ``target-update``. When the server receives a ``block`` update, it must react as follows:
+
+1. If the user is not registered, the server replies with a ``no-such-profile`` failure and drops the update.
+2. The username from the ``target`` field is added to the profile's block list if it isn't present already.
+3. The update is sent back to the user.
+
+A new update type called ``unblock`` is introduced. It is a ``target-update``. When the server receives an ``unblock`` update, it must react as follows:
+
+1. If the user is not registered, the server replies with a ``no-such-profile`` failure and drops the update.
+2. The username from the ``target`` field is removed to the profile's block list.
+3. The update is sent back to the user.
+
+A new update type called ``blocked`` is introduced. When the server receives a ``blocked`` update, it must react as follows:
+
+1. If the user is not registered, the server replies with a ``no-such-profile`` failure and drops the update.
+2. The update's ``target`` field is filled with a list of usernames on the sending user profile's block list.
+3. The update is sent back to the user.
+
+## 20. Reactions (shirakumo-reactions)
+Purpose: allows users to react to messages without sending a new message.
+
+This requires clients to implement unique IDs when sending an update. They do not need to be globally unique, but should be unique to that user, regardless of connection used.
+
+A new update type called ``react`` is introduced. It is a ``channel-update`` and carries the additional fields ``update-id``, ``target``, and ``emote``. ``update-id`` must be an ``id`` used in a message previously sent by the ``target`` user in the ``channel``. ``emote`` must either be unicode characters from the emoji block, or if the ``shirakumo-emote`` extension is supported, the name of an emote.
+
+When the server receives a ``react`` update, it must act as follows:
+
+1. If the user is not in the named channel, a ``not-in-channel`` update is sent back and the request is dropped.
+2. If the ``emote`` does not contain valid text as noted above, a ``malformed-update`` failure is sent back and the update is dropped.
+3. The user's ``react`` update is distributed to all users in the channel.
+
+For each visible update the client should now keep track of a table of reactions from emotes to lists of users that used the emote on the referenced update. When the client receives a ``react`` update, it should update the table as follows:
+
+1. If the emote is not in the table yet, a new entry is added, associated to an empty list.
+2. If the ``from`` user is not in the list of users, the user is added to it. Otherwise the user is removed from it.
+3. The table of emotes is displayed in the vicinity of the referenced update as a list of emotes and counts of users having used said emote. If applicable, the list of users having used the emote should also be displayed via a hover action.
+
+If a ``react`` update references an update that is not known to the client, it is ignored.
+
+## 21. Replies (shirakumo-replies)
+Purpose: allows specifying another message that a message is in reply to.
+
+This requires clients to implement unique IDs when sending an update. They do not need to be globally unique, but should be unique to that user, regardless of connection used.
+
+A new field is added to the ``message`` update: ``reply-to``. The field should hold a list of two values, a username and an id, identifying the message this message is in reply to.
+
+The server does not have to do anything special aside from transmitting the field.
+
+When the client receives a ``message`` update with the ``reply-to`` field set, it should display the message in relation to the original message, by quoting it or linking back to it in some manner.
+
+## 22. Last Read (shirakumo-last-read)
+Purpose: allows tracking which message in a channel was last read across connections.
+
+This requires the server to track a new per-user property in each channel: 'last read message', which is a tuple of a message ID and a username.
+
+A new update is introduced called ``last-read``, which is a ``channel-update``. It has two additional optional fields, ``update-id``, and ``target``. ``update-id`` must be an ``id`` used in a message previously sent by the ``target`` user in the ``channel``.
+
+When the server receives a ``last-read`` update, it proceeds as follows:
+
+1. If the ``update-id`` and ``target`` fields are set:
+  1. The id and target are stored for the user's 'last read message' in the associated channel.
+  2. The update is sent back to the user.
+2. Otherwise:
+  1. The update is modified to use the 'last read message' information to fill in the ``update-id`` and ``target`` fields.
+  2. The update is sent back to the sending connection.
+
+If the user leaves a channel, the 'last read message' tuple may be unset. If a user enters a channel, the 'last read message' tuple must be set to the ``enter`` message's ``id`` and ``from`` fields, should the 'last read message' tuple be unset.
+
+## 23. Typing (shirakumo-typing)
+Purpose: allows specifying when a user is in the process of typing a message.
+
+A new update is introduced called ``typing``, which is a ``channel-update``.
+
+When the server receives a ``typing`` update, it proceeds as follows:
+
+1. The update is distributed to all users in the channel.
+
+When a client receives a ``typing`` update, it should notify the user that the update's sender is typing something. If no new ``typing`` update is received within the next 5 seconds, the typing notification should be cleared.
+
+When the client's user types, the client may send a ``typing`` update to the current channel, as long as the previous ``typing`` update was sent more than 4 seconds ago.

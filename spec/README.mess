@@ -1,0 +1,14 @@
+[ image logo.svg ]
+
+# About Lichat
+This repository specifies the protocol of the "Lichat"(https://shirakumo.github.io/lichat) chat system. It offers both verbal and machine-readable descriptions of the protocol.
+
+You can find the core specification in the "lichat.mess"(link lichat.mess) file.
+
+## See Also
+- "lichat-tcp-client"(https://shirakumo.github.io/lichat-tcp-client) A basic lisp client
+- "Ocelot"(https://github.com/Shirakumo/ocelot) An Android client
+- "ex-lichat"(https://github.com/Shirakumo/ex-lichat) An advanced Elixir server
+- "lichat-js"(https://github.com/Shirakumo/lichat-js) A JavaScript client and GUI
+- "py-lichat"(https://github.com/Shirakumo/py-lichat) A Python client
+- "weelichat"(https://github.com/Shirakumo/weelichat) A Weechat client script
