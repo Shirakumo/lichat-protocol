@@ -21,7 +21,7 @@
 (define-object lichat:join (lichat:channel-update))
 (define-object lichat:leave (lichat:channel-update))
 (define-object lichat:message (lichat:channel-update lichat:text-update))
-(define-object lichat:create ()
+(define-object lichat:create (lichat:update)
   (:channel string :optional))
 (define-object lichat:kick (lichat:channel-update lichat:target-update))
 (define-object lichat:pull (lichat:channel-update lichat:target-update))

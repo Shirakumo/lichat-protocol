@@ -32,7 +32,7 @@
 (define-extension "shirakumo-channel-info"
   (define-object shirakumo:channel-info (lichat:channel-update)
     (:keys (or (list symbol) T)))
-  (define-object shirakumo:set-channel-info (lichat:channel-update text-update)
+  (define-object shirakumo:set-channel-info (lichat:channel-update lichat:text-update)
     (:key symbol))
   (define-object shirakumo:no-such-channel-info (lichat:update-failure)
     (:key symbol))
@@ -51,8 +51,8 @@
     (:by integer)))
 
 (define-extension "shirakumo-quiet"
-  (define-object shirakumo:quiet (lichat:channel-update target-update))
-  (define-object shirakumo:unquiet (lichat:channel-update target-update))
+  (define-object shirakumo:quiet (lichat:channel-update lichat:target-update))
+  (define-object shirakumo:unquiet (lichat:channel-update lichat:target-update))
   (define-object shirakumo:quieted (lichat:channel-update)
     (:target (list string) :optional)))
 
