@@ -64,5 +64,5 @@
     (stray-null-found ()
       NIL)
     (reader-condition ()
-      (skip-to-null)
+      (skip-to-null stream)
       NIL)))
