@@ -8,12 +8,27 @@
 
 (defvar *unbound-value* (make-symbol "UNBOUND"))
 
+(defun %check-slot-value (value type)
+  (labels ((rec (value type)
+             (typecase type
+               ((cons (eql list))
+                (let ((element-type (second type)))
+                  (and (listp value)
+                       (every (lambda (element)
+                                (rec element element-type))
+                              value))))
+               ((cons (eql or))
+                (some (lambda (type) (rec value type)) (rest type)))
+               (t
+                (typep value type)))))
+    (rec value type)))
+
 (defun check-compatible-slot-value (value object slot)
   (cond ((eq value *unbound-value*)
          (unless (eql T (slot-type slot))     
            (cerror "Unbind the slot anyway." 'incompatible-value-type-for-slot
                    :object object :slot (c2mop:slot-definition-name slot) :value *unbound-value* :type (slot-type slot))))
-        ((not (typep value (slot-type slot)))
+        ((not (%check-slot-value value (slot-type slot)))
          (cerror "Write to the slot anyway." 'incompatible-value-type-for-slot
                  :object object :slot (c2mop:slot-definition-name slot) :value value :type (slot-type slot)))))
 
