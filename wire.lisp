@@ -8,7 +8,7 @@
 
 (defun to-wire (wireable stream)
   (etypecase wireable
-    (wire-object
+    (object
      (print-sexpr `(,(class-name (class-of wireable))
                      ,@(loop for slot in (c2mop:class-slots (class-of wireable))
                              for initarg = (first (c2mop:slot-definition-initargs slot))
@@ -48,7 +48,7 @@
               (cond ((c2mop:subclassp class (find-class 'update))
                      (check-update-options sexpr)
                      (apply #'make-instance (first sexpr) :allow-other-keys T (rest sexpr)))
-                    ((c2mop:subclassp class (find-class 'wire-object))
+                    ((c2mop:subclassp class (find-class 'object))
                      (apply #'make-instance (first sexpr) :allow-other-keys T (rest sexpr)))
                     (T
                      (error 'unknown-wire-object :update sexpr)))))

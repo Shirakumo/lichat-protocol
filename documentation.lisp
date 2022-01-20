@@ -364,13 +364,13 @@ See PERMISSIONS")
 See CHANNEL
 See USERS")
 
-  (type wire-object
+  (type object
     "Superclass for all classes that can be put onto the wire.")
 
   (type update
     "Base class for all updates.
 
-See WIRE-OBJECT
+See OBJECT
 See ID
 See CLOCK
 See FROM
@@ -889,7 +889,7 @@ See READ-SEXPR-TOKEN")
 
 Tokens are sequences of characters that are terminated
 by one of the following:
- \"():0123456789. 
+ \"():0123456789.
 These characters may still appear in a token, but must
 be escaped by a backslash.")
 
@@ -1018,7 +1018,7 @@ of type UNKNOWN-WIRE-OBJECT is signalled. If the class
 is a subclass of UPDATE, the rest of the items in the
 list are checked by CHECK-UPDATE-OPTIONS. Finally
 MAKE-INSTANCE is called with the full expression as
-arguments. If the class is a subclass of wire-object,
+arguments. If the class is a subclass of object,
 MAKE-INSTANCE is called with the full expression as
 arguments immediately.
 

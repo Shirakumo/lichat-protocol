@@ -62,7 +62,7 @@
     (set-channel-info (+ :registrant))))
 
 (deftype wireable ()
-  `(or real string cons symbol wire-object))
+  `(or real string cons symbol object))
 
 (defun valid-name-char-p (c)
   (or (char= #\Space c)
