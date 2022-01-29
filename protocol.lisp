@@ -203,7 +203,7 @@
 
 (defmacro define-object-extension (name superclasses &body fields)
   (let ((class (find-class name)))
-    `(progn
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
        (define-protocol-class ,name ,(union (remove 'typed-object (mapcar #'class-name (c2mop:class-direct-superclasses class)))
                                             superclasses)
          (,@(loop for slot in (c2mop:class-direct-slots class)
