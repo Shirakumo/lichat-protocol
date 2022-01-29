@@ -187,6 +187,8 @@
                          (intern (string-upcase name) '#:org.shirakumo.lichat.protocol)
                          name)))
       (list* slot-name :initarg name
+             ;; KLUDGE: until the fixover...
+                       :initarg (intern (string name) "KEYWORD")
                        :accessor slot-name
                        :slot-type type
                        (unless (find :optional args)
@@ -209,12 +211,14 @@
          (,@(loop for slot in (c2mop:class-direct-slots class)
                   do (setf fields (remove (first (c2mop:slot-definition-initargs slot))
                                           fields :key #'first))
-                  collect (list* (c2mop:slot-definition-name slot)
-                                 :initarg (first (c2mop:slot-definition-initargs slot))
-                                 :accessor (first (c2mop:slot-definition-readers slot))
-                                 :slot-type (slot-type slot)
-                                 (when (c2mop:slot-definition-initform slot)
-                                   `(:initform ,(c2mop:slot-definition-initform slot)))))
+                  collect (append (list (c2mop:slot-definition-name slot)
+                                        :slot-type (slot-type slot))
+                                  (loop for initarg in (c2mop:slot-definition-initargs slot)
+                                        collect :initarg collect initarg)
+                                  (loop for reader in (c2mop:slot-definition-readers slot)
+                                        collect :accessor collect reader)
+                                  (when (c2mop:slot-definition-initform slot)
+                                    `(:initform ,(c2mop:slot-definition-initform slot)))))
           ,@(mapcar #'field-definition-to-slot-definition fields)))
        ,@(loop for field in fields
                for accessor = (getf (rest (field-definition-to-slot-definition field)) :accessor)
