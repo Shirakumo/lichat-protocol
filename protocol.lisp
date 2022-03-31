@@ -188,11 +188,14 @@
                          name)))
       (list* slot-name :initarg name
              ;; KLUDGE: until the fixover...
-                       :initarg (intern (string name) "KEYWORD")
-                       :accessor slot-name
-                       :slot-type type
-                       (unless (find :optional args)
-                         `(:initform (error ,(format NIL "~s required." name))))))))
+             :initarg (intern (string name) "KEYWORD")
+             :accessor slot-name
+             :slot-type (if (find :optional args)
+                            `(or null ,type)
+                            type)
+             (if (find :optional args)
+                 `(:initform NIL)
+                 `(:initform (error ,(format NIL "~s required." name))))))))
 
 (defmacro define-object (name superclasses &body fields)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
@@ -217,8 +220,7 @@
                                         collect :initarg collect initarg)
                                   (loop for reader in (c2mop:slot-definition-readers slot)
                                         collect :accessor collect reader)
-                                  (when (c2mop:slot-definition-initform slot)
-                                    `(:initform ,(c2mop:slot-definition-initform slot)))))
+                                  `(:initform ,(c2mop:slot-definition-initform slot))))
           ,@(mapcar #'field-definition-to-slot-definition fields)))
        ,@(loop for field in fields
                for accessor = (getf (rest (field-definition-to-slot-definition field)) :accessor)
