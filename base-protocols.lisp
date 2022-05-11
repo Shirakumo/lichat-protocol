@@ -9,6 +9,10 @@
 (define-from-protocol-file "spec/lichat.sexpr")
 (define-from-protocol-file "spec/shirakumo.sexpr")
 
+;; Define base symbols of the channel/user--info extension
+:news :topic :rules :contact :url
+:birthday :contact :location :public-key :real-name :status
+
 (defmethod print-object ((update update) stream)
   (print-unreadable-object (update stream :type T)
     (format stream "~s ~a ~s ~a" :from (maybe-sval update 'from)
