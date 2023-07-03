@@ -1,9 +1,3 @@
-#|
- This file is a part of lichat
- (c) 2016 Shirakumo http://tymoon.eu (shinmera@tymoon.eu)
- Author: Nicolas Hafner <shinmera@tymoon.eu>
-|#
-
 (in-package #:org.shirakumo.lichat.protocol)
 
 (defvar *whitespace* (map 'vector #'code-char '(#x0009 #x000A #x000B #x000C #x000D #x0020)))

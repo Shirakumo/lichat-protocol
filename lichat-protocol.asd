@@ -1,14 +1,8 @@
-#|
- This file is a part of lichat
- (c) 2016 Shirakumo http://tymoon.eu (shinmera@tymoon.eu)
- Author: Nicolas Hafner <shinmera@tymoon.eu>
-|#
-
 (asdf:defsystem lichat-protocol
   :version "1.5"
   :license "zlib"
-  :author "Nicolas Hafner <shinmera@tymoon.eu>"
-  :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
+  :author "Yukari Hafner <shinmera@tymoon.eu>"
+  :maintainer "Yukari Hafner <shinmera@tymoon.eu>"
   :description "The independent protocol part of Lichat."
   :homepage "https://Shirakumo.github.io/lichat-protocol/"
   :bug-tracker "https://github.com/Shirakumo/lichat-protocol/issues"
