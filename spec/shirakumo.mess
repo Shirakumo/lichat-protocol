@@ -101,6 +101,7 @@ Purpose: allows associating metadata with channels such as the set of rules, a t
 
 Channels receive extra metadata fields that can be set set by users. To this end, channels must keep a table of ``metadata`` to track. The server must restrict the valid keys in that table, and may restrict the content of values associated with each key. The following keys must always be available, with the specified intended purposes:
 
+- ``:title`` A human-readable title the client can display instead of the channel's name. Especially useful for anonymous channels.
 - ``:news`` Updates and latest news by channel administrators
 - ``:topic`` A description of the general discussion topic of the channel
 - ``:rules`` A Description of the rules that need to be followed by channel members
