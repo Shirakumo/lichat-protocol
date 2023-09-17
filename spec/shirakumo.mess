@@ -73,9 +73,9 @@ Purpose: allows users to make retroactive edits to their messages.
 
 A new update type called ``edit`` is introduced, which is a ``message``. If the server receives an ``edit`` update it acts in the same way as a regular ``message`` event. No additional support from the server is required outside of recognising and accepting the type.
 
-When the client sees an ``edit`` update, it should change the ``text`` of the ``message`` update with the same ``from`` and ``id`` fields to the one from the ``edit`` update. Ideally a user interface for Lichat should also include an indication that the previous message event has been changed, including perhaps even a history of all the potential edits of a message.
+When the client sees an ``edit`` update, it should change the ``text`` of the ``message`` update with the same ``from`` and ``id`` fields to the one from the ``edit`` update. Ideally a user interface for Lichat should also include an indication that the previous message event has been changed, including perhaps even a history of all the potential edits of a message. If the ``text`` field of the ``edit`` update is empty, the message should be marked as deleted, or removed outright.
 
-If the client receives an ``edit`` update whose ``id`` and ``from`` fields do not refer to any previous ``message`` update, the client should simply ignore the update.
+If the client receives an ``edit`` update whose ``id`` and ``from`` fields do not refer to any previous ``message`` update, the client should simply ignore the update. The client //may// make an exception for other content updates like ``data`` or ``link`` when the ``text`` of the ``edit`` is empty, causing the update to be marked as deleted.
 
 ## 5. Channel Trees (shirakumo-channel-trees)
 Purpose: enforces a structure on channels and allows creating channel hierarchies for easier grouping.
