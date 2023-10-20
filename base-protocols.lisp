@@ -4,7 +4,7 @@
 (define-from-protocol-file "spec/shirakumo.sexpr")
 
 ;; Define base symbols of the channel/user--info extension
-:news :topic :rules :contact :url
+:title :news :topic :rules :contact :url
 :birthday :contact :location :public-key :real-name :status
 
 (defmethod print-object ((update update) stream)
