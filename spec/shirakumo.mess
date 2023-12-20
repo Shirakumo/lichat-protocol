@@ -594,3 +594,20 @@ When the server receives a ``typing`` update, it proceeds as follows:
 When a client receives a ``typing`` update, it should notify the user that the update's sender is typing something. If no new ``typing`` update is received within the next 5 seconds, the typing notification should be cleared.
 
 When the client's user types, the client may send a ``typing`` update to the current channel, as long as the previous ``typing`` update was sent more than 4 seconds ago.
+
+## 24. URL (shirakumo-url)
+Purpose: specifies a URL format to reference specific messages.
+
+This does not introduce any protocol extensions and instead specifies a URL format that clients should be able to interpret to link to servers, channels, and specific messages. The specific format is as follows:
+
+::
+URL     ::= 'lichat://' HOST (':' PORT)? '/' (CHANNEL ('#' MESSAGE)?)?
+HOST    --- The server hostname
+PORT    --- The server port. If unspecified defaults to 1111
+CHANNEL --- An URL-encoded version of the channel name
+MESSAGE ::= USER '@' ID
+USER    --- An URL-encoded version of the message FROM
+ID      --- An URL-encoded version of the message ID
+::
+
+Or in other words, the protocol should be ``lichat``, the path is the channel name, and the fragment encodes the message. It needs to encode both the sender and ID in order to uniquely identify the message, as IDs are only meant to be unique per user. The URL's query paramaters are left unspecified and may be used by clients and servers to include additional information.
