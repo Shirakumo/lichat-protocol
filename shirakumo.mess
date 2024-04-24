@@ -77,6 +77,8 @@ When the client sees an ``edit`` update, it should change the ``text`` of the ``
 
 If the client receives an ``edit`` update whose ``id`` and ``from`` fields do not refer to any previous ``message`` update, the client should simply ignore the update.
 
+If the client also supports the ``shirakumo-markup`` extension, it should also update the ``rich`` field of the original ``message``.
+
 ## 5. Channel Trees (shirakumo-channel-trees)
 Purpose: enforces a structure on channels and allows creating channel hierarchies for easier grouping.
 
@@ -290,18 +292,77 @@ Purpose: allows using different markup languages to stylise the text in ``text-u
 
 ``text-update``s all receive the following additional fields:
 
-- ``rich`` A ``string`` containing a version of the text with markup information included. The ``text`` field must be set to the same text as this field, but with all markup information stripped away.
-- ``markup`` A ``string`` identifying the markup that is used in the rich text.
+- ``rich`` An AST containing a version of the text with markup information included. The ``text`` field must be set to the same text as this field, but with all markup information stripped away.
 
-When a client receives a ``text-update`` it should check the ``markup`` field and determine whether it supports rendering the given format. If it is supported, the client should render the text according to the ``rich`` contents instead of the ``text`` contents. The client may ignore parts of the rich text if it considers the markup unsuitable. If the markup contains errors, the client must fall back to displaying the unformatted ``text`` instead.
+When a client receives a ``text-update`` it should check the ``rich`` field and if it is set, the client should render the text according to the ``rich`` contents instead of the ``text`` contents. The client may ignore parts of the rich text if it considers the markup unsuitable. If the markup contains errors, the client must fall back to displaying the unformatted ``text`` instead.
+The content in the ``rich`` field is a an AST according to the following BNF:
 
-The following markup formats are officially recognised, though others may be used:
+:: BNF
+rich            ::= group
+content         ::= block | inline
+block           ::= group
+                  | paragraph
+                  | unordered-list
+                  | ordered-list
+                  | code
+                  | section
+                  | image
+                  | quote
+                  | extended-block
+group           ::= (:g () content*)
+paragraph       ::= (:p () inline*)
+unordered-list  ::= (:ul () group*)
+                --- Wherein each group represents a list item
+ordered-list    ::= (:ol () group*)
+                --- Wherein each group represents a list item
+code            ::= (:code string string)
+                --- The first string designates the language (and thus syntax highlighting rules) for the code in the second string.
+section         ::= (:section (integer inline*) content*)
+                --- The integer designates the depth of the header, and its accompanying inline segments the header content.
+image           ::= (:image target)
+quote           ::= (:quote string content*)
+                --- The string designating the quote author
+extended-block  ::= (symbol list content*)
+                --- A new block type defined in an extension. If the client does not support this block type, it should ignore the arguments list and treat the block as a group instead.
+inline          ::= bold
+                  | italic
+                  | underline
+                  | strikethrough
+                  | monospace
+                  | subtext
+                  | supertext
+                  | link
+                  | color
+                  | string
+                  | extended-inline
+bold            ::= (:b () inline*)
+italic          ::= (:i () inline*)
+underline       ::= (:u () inline*)
+strikethrough   ::= (:s () inline*)
+monospace       ::= (:m () inline*)
+subtext         ::= (:sub () inline*)
+supertext       ::= (:sup () inline*)
+link            ::= (:link target inline*)
+color           ::= (:color rgb inline*)
+extended-inline ::= (symbol list inline*)
+                --- A new inline type defined in an extension. If the client does not support this block type, it should ignore the arguments list and treat the block as a group instead.
+rgb             ::= (float float float)
+                --- An sRGB additive colour triplet, with 0 meaning no contribution and 1 meaning full contribution to the respective channel.
+target          ::= string
+                --- An URL encoded in the string.
+::
+
+Each of the blocks in the tree thus has the general form of ``(kind argument/s content*)`` which should simplify the process of parsing it and turning it into a visual representation.
+
+Clients should allow users to write the rich text using some form of surface syntax. The following are suggested possibilities for such surface syntax:
 
 - ``html`` HTML5 content
 - ``markless`` "Markless"(https://shirakumo.github.io/markless)
 - ``markdown`` "Markdown"(https://daringfireball.net/projects/markdown/syntax)
 - ``org`` "org-mode"(https://orgmode.org)
 - ``rest`` "reStructuredText"(https://docutils.readthedocs.io/en/sphinx-docs/user/rst/quickstart.html)
+
+Note that in combination with the ``shirakumo-edit`` extension, the client should also support the inverse operation of turning the AST back into the surface syntax for the user.
 
 ## 14. User Info (shirakumo-user-info)
 Purpose: allows associating additional information with registered user accounts.
@@ -572,10 +633,11 @@ A new update is introduced called ``last-read``, which is a ``channel-update``. 
 
 When the server receives a ``last-read`` update, it proceeds as follows:
 
-1. If the ``update-id`` and ``target`` fields are set:
+1. If the user is not registered, an error of type ``no-such-profile`` is sent back and the update is dropped.
+2. If the ``update-id`` and ``target`` fields are set:
   1. The id and target are stored for the user's 'last read message' in the associated channel.
   2. The update is sent back to the user.
-2. Otherwise:
+3. Otherwise:
   1. The update is modified to use the 'last read message' information to fill in the ``update-id`` and ``target`` fields.
   2. The update is sent back to the sending connection.
 
@@ -593,3 +655,21 @@ When the server receives a ``typing`` update, it proceeds as follows:
 When a client receives a ``typing`` update, it should notify the user that the update's sender is typing something. If no new ``typing`` update is received within the next 5 seconds, the typing notification should be cleared.
 
 When the client's user types, the client may send a ``typing`` update to the current channel, as long as the previous ``typing`` update was sent more than 4 seconds ago.
+
+## 24. OTP (shirakumo-otp)
+Purpose: allows using one-time-passwords to authenticate against a user account.
+
+The ``register`` update is changed to include an additional field called ``otp-key`` which is a ``string`` and contains some implementation-specific key used to determine validity of future OTP tokens.
+
+When the server receives a ``register`` update with the ``otp-key`` field set, it should act as follows:
+
+1. If the ``otp-key`` string is empty (zero length):
+   1. It deactivates one-time-password authentication for the account.
+   2. Otherwise, it stores the ``otp-key`` and enables the account for one-time-password authentication. If the key is invalid, an ``invalid-otp-key`` failure is returned and the update is dropped.
+2. It sends the update back to the user.
+
+The ``connect`` update is changed to include an additional field called ``otp-token`` which is a ``string`` and contains some implementation-specific one-time-password token obtained through the implementation's specified password generation mechanism.
+
+When the server receives a ``connect`` update for an account for which one-time-password authentication has been enabled, an additional verification step is inserted after §4.1.7:
+
+1. The ``otp-token`` is verified for validity against the stored ``otp-key`` by an implementation-specific mechanism. If the token is not valid or not provided, an ``invalid-password`` update is returned and the connection is closed.
