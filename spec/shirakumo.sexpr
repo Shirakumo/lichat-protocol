@@ -78,8 +78,7 @@
 
 (define-extension "shirakumo-markup"
   (define-object-extension lichat:text-update ()
-    (shirakumo:rich string :optional)
-    (shirakumo:markup string :optional)))
+    (shirakumo:rich list :optional)))
 
 (define-extension "shirakumo-user-info"
   (define-object shirakumo:set-user-info (lichat:text-update)
@@ -133,6 +132,13 @@
 
 (define-extension "shirakumo-typing"
   (define-object shirakumo:typing (lichat:channel-update)))
+
+(define-extension "shirakumo-otp"
+  (define-object shirakumo:invalid-otp-key (lichat:update-failure))
+  (define-object-extension lichat:connect ()
+    (shirakumo:otp-token string :optional))
+  (define-object-extension lichat:register ()
+    (shirakumo:otp-key string :optional)))
 
 (define-extension "shirakumo-roles"
   (define-object shirakumo:role-update (lichat:channel-update)

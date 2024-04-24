@@ -71,3 +71,7 @@
 (define-object lichat:no-such-user (lichat:update-failure))
 (define-object lichat:too-many-updates (lichat:update-failure))
 (define-object lichat:clock-skewed (lichat:update-failure))
+
+(define-object lichat:warning (lichat:text-update)
+  (:update-id id))
+(define-object lichat:updates-throttled (lichat:warning))
