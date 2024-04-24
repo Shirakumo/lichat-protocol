@@ -611,3 +611,85 @@ ID      --- An URL-encoded version of the message ID
 ::
 
 Or in other words, the protocol should be ``lichat``, the path is the channel name, and the fragment encodes the message. It needs to encode both the sender and ID in order to uniquely identify the message, as IDs are only meant to be unique per user. The URL's query paramaters are left unspecified and may be used by clients and servers to include additional information.
+
+## 25. Roles (shirakumo-roles)
+Purpose: allows grouping sets of permissions into roles for easier management.
+
+A new server-side object is introduced called ``role`` with the following attributes:
+
+- ``name`` The name of the role, which underlies the same restrictions as usernames described by §2.2.1
+- ``permissions`` A map assigning update types to be either granted (``T``), denied (``NIL``), or in the default, ignored.
+- ``members`` A set of usernames belonging to this role.
+
+The channel object is updated to have a ``roles`` field, which maps a role name to a ``role`` object.
+
+The following default set of role objects should be added to every newly created channel:
+
+- ``name``: ``admin``
+  ``permissions``: ``((kick T) (pull T) (set-channel-info T) (destroy T) (quiet T) (unquiet T) (quieted T) (bridge T) (permissions T))``
+  ``members``: ``(creator)``
+- ``name``: ``moderator``
+  ``permissions``: ``((kick T) (pull T) (set-channel-info T) (quiet T) (unquiet T) (quieted T))``
+  ``members``: ``()``
+
+Update permissions checking (§5.1.8) is extended as follows:
+
+1. If the user has an entry in the channel's ``permissions`` set for the update type proceed as normal and skip this extra behaviour.
+2. For each ``role``:
+3. If the update type does not have an entry in the ``permissions`` set of the ``role``, skip.
+4. If the user is not a part of the ``members`` set of the ``role``, skip.
+5. If the permission is set to ``NIL`` (deny), an ``insufficient-permissions`` update is sent back and the request is dropped.
+6. If the permission is set to ``T`` (grant), this is remembered.
+7. When each ``role`` has been processed and there was a ``grant`` permission, the update is permitted.
+8. Otherwise the channel's default permission entry for the update type is considered.
+
+A new update is introduced called ``role-update``, which is a ``channel-update``. It is an abstract supertype and has no behaviour of its own.
+
+A new update is introduced called ``role``, which is a ``role-update``.
+
+When the server receives a ``role`` update, it proceeds as follows:
+
+1. If the user is not in the named channel, a ``not-in-channel`` update is sent back and the request is dropped.
+2. If the ``permissions`` field is unset and no corresponding ``role`` exists for the channel, a ``no-such-role`` update is sent back and the request is dropped.
+3. If the ``permissions`` field is set and no corresponding role exists for the channel, the ``role`` object is created for the channel.
+4. If the ``permissions`` field is set, the ``permissions`` field of the corresponding ``role`` is updated to match.
+5. The ``permissions`` field of the update is set to match the ``permissions`` of the corresponding ``role``.
+6. The update is sent back.
+
+A new update is introduced called ``delete-role``, which is a ``role-update``.
+
+When the server receives a ``delete-role`` update, it proceeds as follows:
+
+1. If the user is not in the named channel, a ``not-in-channel`` update is sent back and the request is dropped.
+2. If no corresponding ``role`` exists for the channel, a ``no-such-role`` update is sent back and the request is dropped.
+3. The corresponding ``role`` object is removed from the channel.
+4. The update is sent back.
+
+A new update is introduced called ``assign-role``, which is a ``role-update`` and a ``target-update``.
+
+When the server receives an ``assign-role`` update, it proceeds as follows:
+
+1. If the user is not in the named channel, a ``not-in-channel`` update is sent back and the request is dropped.
+2. If no corresponding ``role`` exists for the channel, a ``no-such-role`` update is sent back and the request is dropped.
+3. The ``target`` username is added to the set of ``members`` of the role if it does not already exist.
+4. The update is sent back.
+
+A new update is introduced called ``remove-role``, which is a ``role-update`` and a ``target-update``.
+
+When the server receives an ``remove-role`` update, it proceeds as follows:
+
+1. If the user is not in the named channel, a ``not-in-channel`` update is sent back and the request is dropped.
+2. If no corresponding ``role`` exists for the channel, a ``no-such-role`` update is sent back and the request is dropped.
+3. The ``target`` username is removed to the set of ``members`` of the role if it exists.
+4. The update is sent back.
+
+A new update is introduced called ``roles``, which is a ``channel-update``.
+
+When the server receives an ``roles`` update, it proceeds as follows:
+
+1. If the user is not in the named channel, a ``not-in-channel`` update is sent back and the request is dropped.
+2. If the ``target`` field is set, the ``roles`` field is populated with the set of ``role`` ``name``s for which the ``target`` is a part of the ``members`` set.
+3. If the ``target`` field is unset, the ``roles`` field is populated with the set of ``role`` ``name``s.
+4. The update is sent back.
+
+
