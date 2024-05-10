@@ -4,7 +4,7 @@
   (:local-nicknames
    (#:pln #:trivial-package-local-nicknames))
   (:use #:cl)
-  (:shadow #:search #:block)
+  (:shadow #:search #:block #:warning)
   ;; conditions.lisp
   (:export
    #:protocol-condition
