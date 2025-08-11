@@ -4,9 +4,9 @@
   :author "Yukari Hafner <shinmera@tymoon.eu>"
   :maintainer "Yukari Hafner <shinmera@tymoon.eu>"
   :description "The independent protocol part of Lichat."
-  :homepage "https://Shirakumo.github.io/lichat-protocol/"
-  :bug-tracker "https://github.com/Shirakumo/lichat-protocol/issues"
-  :source-control (:git "https://github.com/Shirakumo/lichat-protocol.git")
+  :homepage "https://shirakumo.org/docs/lichat-protocol/"
+  :bug-tracker "https://shirakumo.org/project/lichat-protocol/issues"
+  :source-control (:git "https://shirakumo.org/project/lichat-protocol.git")
   :serial T
   :components ((:file "package")
                (:file "conditions")

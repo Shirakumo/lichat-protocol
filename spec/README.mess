@@ -1,17 +1,17 @@
 [ image logo.svg ]
 
 # About Lichat
-This repository specifies the protocol of the "Lichat"(https://shirakumo.github.io/lichat) chat system. It offers both verbal and machine-readable descriptions of the protocol.
+This repository specifies the protocol of the "Lichat"(https://shirakumo.org/docs/lichat) chat system. It offers both verbal and machine-readable descriptions of the protocol.
 
 ## Index
 - "lichat.mess"(link lichat.mess) The Lichat core protocol specification
 - "shirakumo.mess"(link shirakumo.mess) The Shirakumo protocol extensions
 
 ## See Also
-- "lichat-tcp-client"(https://shirakumo.github.io/lichat-tcp-client) A basic lisp client library
-- "ex-lichat"(https://github.com/Shirakumo/ex-lichat) An advanced Elixir server
-- "lichat-js"(https://github.com/Shirakumo/lichat-js) A JavaScript client library and GUI
-- "py-lichat"(https://github.com/Shirakumo/py-lichat) A Python client library
-- "weelichat"(https://github.com/Shirakumo/weelichat) A Weechat client script
-- "jLichat"(https://github.com/Shirakumo/jlichat) A Java client library
-- "Ocelot"(https://github.com/Shirakumo/ocelot) An Android client
+- "lichat-tcp-client"(https://shirakumo.org/docs/lichat-tcp-client) A basic lisp client library
+- "ex-lichat"(https://shirakumo.org/project/ex-lichat) An advanced Elixir server
+- "lichat-js"(https://shirakumo.org/project/lichat-js) A JavaScript client library and GUI
+- "py-lichat"(https://shirakumo.org/project/py-lichat) A Python client library
+- "weelichat"(https://shirakumo.org/project/weelichat) A Weechat client script
+- "jLichat"(https://shirakumo.org/project/jlichat) A Java client library
+- "Ocelot"(https://shirakumo.org/project/ocelot) An Android client
